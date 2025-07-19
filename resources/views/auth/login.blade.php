@@ -26,7 +26,7 @@
 
 
         <div class="flex items-center justify-center mt-4 w-full">
-            <x-primary-button class="mt-4 w-full justify-center bg-gold">
+            <x-primary-button class="mt-4 w-full hover:bg-yellow-700 justify-center">
                 {{ __('Log in') }}
             </x-primary-button>
         </div>

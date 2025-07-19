@@ -26,21 +26,35 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-                    Welcome, {{ Auth::user()->full_name ?? Auth::user()->email }}!
-                </div>
-            </div>
+                <a href="{{ route('assets.query') }}" class="bg-blue-700 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm">
+    <i class="fa-solid fa-filter"></i> Advanced Query
+</a>
+
+</div>
+    </div>
         </div>
 
         <!-- Asset Display Table -->
         <div class="max-w-7xl mx-auto mt-2 sm:px-6 lg:px-8">
             <div class="bg-white overflow-x-auto shadow-md sm:rounded-lg">
                 <div class="p-4 border-b flex justify-between items-center">
-                    <div class="text-lg font-semibold text-gray-800">
-                        Assets Overview
+                    <div class="flex items-center space-x-2">
+                        <div class="flex items-center space-x-2">
+                            <div class="text-lg font-semibold text-gray-800">
+                                Assets Overview
+                            </div>
+                            <form action="{{ route('admin.dashboard') }}" method="GET" class="flex items-center space-x-2 ml-4">
+                                <input type="text" name="search" value="{{ request('search') }}"
+                                       placeholder="Search..." class="border rounded px-2 py-1 text-sm">
+                                <button type="submit" class="text-gray-700 hover:text-white bg-gray-100 hover:bg-yellow-400 px-3 py-1 rounded shadow hover:shadow-lg">
+                                    <i class="fa-solid fa-search"></i>
+                                </button>
+                            </form>
+                        </div>
                     </div>
                     <div class="flex justify-center items-center space-x-2">
                         <div class="relative inline-block text-left">
-                            <button onclick="toggleColumnDropdown()" class="bg-gray-100 hover:bg-gray-600 hover:text-white text-gray-700 px-4 py-2 rounded shadow text-sm">
+                            <button onclick="toggleColumnDropdown()" class="bg-gray-100 hover:bg-yellow-400 hover:text-white text-gray-700 px-4 py-2 rounded shadow hover:shadow-lg text-sm">
                                 <i class="fa-solid fa-grip-lines-vertical"></i>
                             </button>
                             <div id="columnDropdown" class="hidden z-10 mt-2 w-48 h-64 fixed overflow-x-auto bg-white border border-gray-200 rounded shadow right-0">
@@ -52,7 +66,7 @@
                                 @endforeach
                             </div>
                         </div>
-                        <a href="{{ route('assets.create') }}" class="inline-block bg-green-700 hover:bg-green-600 text-white text-sm px-4 py-2 rounded shadow">
+                        <a href="{{ route('assets.create') }}" class="inline-block bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded shadow hover:shadow-lg">
                             <i class="fa-solid fa-plus"></i> Asset
                         </a>
                     </div>
@@ -77,13 +91,13 @@
                                 @endforeach
                                 <td class="sticky right-0 px-4 py-2 text-right bg-gray-700">
                                     <div class="invisible group-hover:visible flex justify-start space-x-2">
-                                        <a href="{{ route('assets.edit', $asset->id) }}" class="bg-gray-600 hover:bg-blue-600 text-white px-2 py-1 rounded">
+                                        <a href="{{ route('assets.edit', $asset->id) }}" class="bg-gray-600 hover:bg-blue-600 text-blue-400 hover:text-white px-2 py-1 rounded">
                                             <i class="fa-solid fa-pen"></i>
                                         </a>
                                         <form action="{{ route('assets.destroy', $asset->id) }}" method="POST" onsubmit="return confirm('Delete this asset?');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="bg-gray-600 hover:bg-red-600 text-white px-2 py-1 rounded">
+                                            <button type="submit" class="bg-gray-600 hover:bg-red-600 text-red-400 hover:text-white px-2 py-1 rounded">
                                                 <i class="fa-solid fa-trash"></i>
                                             </button>
                                         </form>
@@ -129,4 +143,5 @@
             });
         });
     </script>
+
 </x-app-layout>

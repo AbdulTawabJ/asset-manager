@@ -4,6 +4,8 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Models\AssetDisplay;
 use App\Http\Controllers\AssetController;
+use Illuminate\Support\Facades\Auth;
+
 
 
 Route::redirect('/', '/login');
@@ -17,7 +19,6 @@ Route::redirect('/', '/login');
 //     return view('dashboard');
 // })->middleware(['auth', 'verified'])->name('dashboard');
 
-use Illuminate\Support\Facades\Auth;
 
 Route::get('/dashboard', function () {
     $user = Auth::user();
@@ -52,15 +53,14 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
-Route::middleware(['auth'])->get('/admin', function () {
-    if (auth()->user()->role !== 'admin') {
-        abort(403, 'Unauthorized');
-    }
 
-    $assets = AssetDisplay::paginate(10);
+Route::get('/admin', [AssetController::class, 'index'])
+    ->middleware(['auth', 'role:admin'])
+    ->name('admin.dashboard');
 
-    return view('admin-dashboard', compact('assets'));
-});
+
+
+Route::middleware(['auth', 'role:admin'])->get('/admin/query', [AssetController::class, 'advancedQuery'])->name('assets.query');
 
 
 Route::middleware(['auth'])->group(function () {
