@@ -23,10 +23,10 @@
                     </div>
                     <div class="flex justify-center items-center space-x-2">
                         <div class="relative inline-block text-left ">
-                            <button onclick="toggleColumnDropdown()" class="bg-gray-100 hover:bg-gray-800 hover:text-white text-gray-700 px-4 py-2 rounded shadow text-sm">
+                            <button onclick="toggleColumnDropdown()" class="bg-gray-100 hover:bg-gray-600 hover:text-white text-gray-700 px-4 py-2 rounded shadow text-sm">
                                 <i class="fa-solid fa-grip-lines-vertical"></i>
-                            </button>
-                            <div id="columnDropdown" class="hidden absolute right-0 z-10 mt-2 w-56 h-48 overflow-x-auto bg-white border border-gray-200 rounded shadow">
+                            </button><!-- h56  -->
+                            <div id="columnDropdown" class="hidden z-10 mt-2 w-48 h-64  fixed overflow-x-auto bg-white border border-gray-200 rounded shadow">
                                 @php
                                     $columns = [
                                         'serial_no' => 'Serial No',
