@@ -71,6 +71,12 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/admin/delete-asset/{asset}', [AssetController::class, 'destroy'])->name('assets.destroy');
 
 });
+// routes/web.php
+Route::post('/settings/save-columns', function (Illuminate\Http\Request $request) {
+    session(['visible_columns' => $request->columns]);
+    return response()->json(['status' => 'stored']);
+})->middleware(['auth'])->name('settings.save-columns');
+
 
 
 require __DIR__.'/auth.php';

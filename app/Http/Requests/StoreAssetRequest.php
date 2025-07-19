@@ -34,4 +34,11 @@ class StoreAssetRequest extends FormRequest
     ];
 
     }
+    protected function prepareForValidation()
+{
+    $this->merge([
+        'requires_it_remark' => $this->has('requires_it_remark'),
+    ]);
+}
+
 }

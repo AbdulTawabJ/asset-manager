@@ -19,15 +19,15 @@ class AssetController extends Controller
     {
         //
     }
-
-    public function create()
+public function create()
 {
-    return view('assets.create', [
+    return view('assets.form', [
         'types' => AssetType::all(),
         'locations' => Location::all(),
         'employees' => Employee::all()
     ]);
 }
+
 
 public function store(StoreAssetRequest $request)
 {
@@ -49,13 +49,14 @@ public function store(StoreAssetRequest $request)
     }
     public function edit(Asset $asset)
 {
-    return view('assets.edit', [
+    return view('assets.form', [
         'asset' => $asset,
         'types' => AssetType::all(),
         'locations' => Location::all(),
         'employees' => Employee::all()
     ]);
 }
+
 
 
     /**

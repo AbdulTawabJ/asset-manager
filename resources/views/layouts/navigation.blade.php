@@ -5,19 +5,19 @@
             <div class="flex items-center space-x-4">
                 <a href="{{ route('dashboard') }}">
                     <img src="{{ asset('images/tmf-logo.png') }}" alt="TMF Logo" class="h-12 w-auto mx-auto">
-
                 </a>
                 <div class="text-xl font-bold text-gray-800">
                     TMF Assets Management - {{ ucfirst(Auth::user()->role) }} Portal
                 </div>
             </div>
 
-            <!-- Right: Logout Button -->
-            <div class="flex items-center">
+            <!-- Right: Username and Logout Button -->
+            <div class="flex items-center space-x-4">
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit" class="bg-white text-red hover:bg-red-600 hover:text-white  px-3 py-2 rounded-full text-sm">
-                        <i class="fa-solid fa-power-off"></i>
+                    <button type="submit" class="bg-white text-red hover:bg-red-600 hover:text-white px-3 py-2 rounded-full text-sm">
+                        {{ Auth::user()->full_name ?? Auth::user()->email }}
+                        <i class="fa-solid fa-power-off ml-2"></i>
                     </button>
                 </form>
             </div>
