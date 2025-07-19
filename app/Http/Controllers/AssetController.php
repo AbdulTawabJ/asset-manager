@@ -47,28 +47,39 @@ public function store(StoreAssetRequest $request)
     {
         //
     }
+    public function edit(Asset $asset)
+{
+    return view('assets.edit', [
+        'asset' => $asset,
+        'types' => AssetType::all(),
+        'locations' => Location::all(),
+        'employees' => Employee::all()
+    ]);
+}
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+    public function update(StoreAssetRequest $request, Asset $asset)
+{
+    $data = $request->validated();
+    $data['remarked_by'] = auth()->user()->full_name ?? auth()->user()->email;
+
+    $asset->update($data);
+
+    return redirect('/admin')->with('success', 'Asset updated successfully.');
+}
+
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
-    {
-        //
-    }
+    public function destroy(Asset $asset)
+{
+    $asset->delete();
+
+    return redirect('/admin')->with('success', 'Asset deleted successfully.');
+}
+
 }

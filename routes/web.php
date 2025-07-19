@@ -66,6 +66,10 @@ Route::middleware(['auth'])->get('/admin', function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/admin/create-asset', [AssetController::class, 'create'])->name('assets.create');
     Route::post('/admin/create-asset', [AssetController::class, 'store'])->name('assets.store');
+    Route::get('/admin/edit-asset/{asset}', [AssetController::class, 'edit'])->name('assets.edit');
+    Route::put('/admin/edit-asset/{asset}', [AssetController::class, 'update'])->name('assets.update');
+    Route::delete('/admin/delete-asset/{asset}', [AssetController::class, 'destroy'])->name('assets.destroy');
+
 });
 
 

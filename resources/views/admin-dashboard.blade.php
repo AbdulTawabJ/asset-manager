@@ -9,8 +9,8 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-                    Welcome, Admin! 
-                </div>
+    Welcome, {{ Auth::user()->full_name ?? Auth::user()->email }}!
+</div>
             </div>
         </div>
 
@@ -21,45 +21,43 @@
                     <div class="text-lg font-semibold text-gray-800">
                         Assets Overview
                     </div>
-                    <div class="flex justify-center items-center ">
-                    
-                    <div  class="relative inline-block text-left ">
-                        <button onclick="toggleColumnDropdown()" class="bg-gray-200 px-4 py-2 rounded shadow text-sm">
-                            <i class="fa-solid fa-grip-lines-vertical"></i>
-                        </button>
-                        <div id="columnDropdown" class="hidden absolute z-10 mt-2 w-56 bg-white border border-gray-200 rounded shadow">
-                            @php
-                                $columns = [
-                                    'serial_no' => 'Serial No',
-                                    'date_of_purchase' => 'Date of Purchase',
-                                    'type' => 'Type',
-                                    'description' => 'Description',
-                                    'amount' => 'Amount',
-                                    'location' => 'Location',
-                                    'owner_full_name' => 'Owner',
-                                    'remarks' => 'Remarks',
-                                    'remarked_by' => 'Remarked By',
-                                    'last_updated_on' => 'Updated On',
-                                ];
-                            @endphp
-                            @foreach ($columns as $key => $label)
-                                <label class="block px-4 py-2 text-sm">
-                                    <input type="checkbox" class="column-toggle mr-2" data-column="{{ $key }}" checked>
-                                    {{ $label }}
-                                </label>
-                            @endforeach
+                    <div class="flex justify-center items-center space-x-2">
+                        <div class="relative inline-block text-left ">
+                            <button onclick="toggleColumnDropdown()" class="bg-gray-100 hover:bg-gray-800 hover:text-white text-gray-700 px-4 py-2 rounded shadow text-sm">
+                                <i class="fa-solid fa-grip-lines-vertical"></i>
+                            </button>
+                            <div id="columnDropdown" class="hidden absolute right-0 z-10 mt-2 w-56 h-48 overflow-x-auto bg-white border border-gray-200 rounded shadow">
+                                @php
+                                    $columns = [
+                                        'serial_no' => 'Serial No',
+                                        'date_of_purchase' => 'Date of Purchase',
+                                        'type' => 'Type',
+                                        'description' => 'Description',
+                                        'amount' => 'Amount',
+                                        'location' => 'Location',
+                                        'owner_full_name' => 'Owner',
+                                        'remarks' => 'Remarks',
+                                        'remarked_by' => 'Remarked By',
+                                        'last_updated_on' => 'Updated On',
+                                    ];
+                                @endphp
+                                @foreach ($columns as $key => $label)
+                                    <label class="block px-4 py-2 text-sm">
+                                        <input type="checkbox" class="column-toggle mr-2" data-column="{{ $key }}" checked>
+                                        {{ $label }}
+                                    </label>
+                                @endforeach
+                            </div>
                         </div>
+                        <a href="{{ route('assets.create') }}" class="inline-block bg-green-700 hover:bg-green-600 text-white text-sm px-4 py-2 rounded shadow">
+                            <i class="fa-solid fa-plus"></i> Asset
+                        </a>
                     </div>
                 </div>
-                    <a href="{{ route('assets.create') }}" class="inline-block bg-green-700 hover:bg-green-600 text-white text-sm px-4 py-2 rounded shadow ">
-                        <i class="fa-solid fa-plus"></i> Asset
-                    </a>
-                
-                 
-</div>
+
                 <table class="min-w-full text-sm text-left">
                     <thead class="bg-gray-100 text-xs text-gray-700 uppercase">
-                        <tr>
+                        <tr class = "divide-x divide-gray-100">
                             <th class="px-4 py-2 column-serial_no">Serial No</th>
                             <th class="px-4 py-2 column-date_of_purchase">Date of Purchase</th>
                             <th class="px-4 py-2 column-type">Type</th>
@@ -70,11 +68,12 @@
                             <th class="px-4 py-2 column-remarks">Remarks</th>
                             <th class="px-4 py-2 column-remarked_by">Remarked By</th>
                             <th class="px-4 py-2 column-last_updated_on">Updated On</th>
+                            <th class="sticky right-0 bg-gray-600 px-4 py-2 text-right text-gray-100">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-200">
+                    <tbody >
                         @foreach ($assets as $asset)
-                            <tr>
+                            <tr class="group hover:bg-gray-50 divide-x divide-gray-100">
                                 <td class="px-4 py-2 column-serial_no">{{ $asset->serial_no }}</td>
                                 <td class="px-4 py-2 column-date_of_purchase">{{ $asset->date_of_purchase }}</td>
                                 <td class="px-4 py-2 column-type">{{ $asset->type }}</td>
@@ -85,11 +84,26 @@
                                 <td class="px-4 py-2 column-remarks">{{ $asset->remarks }}</td>
                                 <td class="px-4 py-2 column-remarked_by">{{ $asset->remarked_by }}</td>
                                 <td class="px-4 py-2 column-last_updated_on">{{ $asset->last_updated_on }}</td>
+                                <td class="sticky right-0 px-4 py-2 text-right bg-gray-700">
+                                    <div class="invisible group-hover:visible flex justify-end space-x-2">
+                                        <a href="{{ route('assets.edit', $asset->id) }}" class="bg-blue-700 hover:bg-blue-600 text-white px-2 py-1 rounded">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </a>
+                                        <form action="{{ route('assets.destroy', $asset->id) }}" method="POST" onsubmit="return confirm('Delete this asset?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="bg-red-700 hover:bg-red-600 text-white px-2 py-1 rounded">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
-                <div class="p-4 flex justify-center w-full bg-gray-800 text-black">
+
+                <div class="p-4 flex justify-center w-full bg-gray-700 text-black">
                     {{ $assets->links() }}
                 </div>
             </div>
