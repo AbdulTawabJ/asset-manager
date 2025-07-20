@@ -25,13 +25,39 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                <a href="{{ route('assets.query') }}" class="bg-blue-700 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm">
-    <i class="fa-solid fa-filter"></i> Advanced Query
-</a>
-
-</div>
-    </div>
+                <div class="p-6 text-gray-900 flex justify-between items-center flex-wrap gap-2">
+                    <div class="flex gap-2">
+                        <a href="{{ route('assets.query') }}" class="bg-purple-700 hover:bg-purple-600 text-white px-4 py-2 rounded text-sm">
+                            <i class="fa-solid fa-filter"></i> Advanced Query
+                        </a>
+                        <a href="#" class="bg-gray-600 text-gray-200 px-4 py-2 rounded text-sm gap-2">                                <i class="fa-solid fa-gem pr-1"></i>Assets</a>
+                        <a href="#" class="bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 px-4 py-2 rounded text-sm"><i class="fa-solid fa-hand-holding-hand pr-1"></i> Shift Log</a>
+                        <a href="#" class="bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 px-4 py-2 rounded text-sm"><i class="fa-solid fa-user pr-1"></i>Employees</a>
+                        <a href="#" class="bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 px-4 py-2 rounded text-sm"><i class="fa-solid fa-location-dot pr-1"></i>Locations</a>
+                        <a href="#" class="bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 px-4 py-2 rounded text-sm"><i class="fa-solid fa-layer-group pr-1"></i>Types</a>
+                    
+                        
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <form method="GET" action="{{ route('admin.export') }}">
+                            @foreach(request()->query() as $key => $value)
+                                @if(is_array($value))
+                                    @foreach($value as $v)
+                                        <input type="hidden" name="{{ $key }}[]" value="{{ $v }}">
+                                    @endforeach
+                                @else
+                                    <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                                @endif
+                            @endforeach
+                            <button type="submit" class="hover:bg-cyan-600  text-gray-700 hover:text-white bg-gray-100 shadow hover:shadow-xl px-4 py-2 rounded text-sm">
+                                <i class="fa-solid fa-download"></i> Export CSV
+                            </button>
+                        </form>
+                        </div>
+                </div>
+                    
+            </div>
         </div>
 
         <!-- Asset Display Table -->
@@ -43,30 +69,34 @@
                             <div class="text-lg font-semibold text-gray-800">
                                 Assets Overview
                             </div>
-                            <form action="{{ route('admin.dashboard') }}" method="GET" class="flex items-center space-x-2 ml-4">
+                            
+                            <form action="{{ route('admin.dashboard') }}" method="GET" class="flex items-center ml-4">
                                 <input type="text" name="search" value="{{ request('search') }}"
-                                       placeholder="Search..." class="border rounded px-2 py-1 text-sm">
-                                <button type="submit" class="text-gray-700 hover:text-white bg-gray-100 hover:bg-yellow-400 px-3 py-1 rounded shadow hover:shadow-lg">
+                                       placeholder="Search..." class="border-white rounded-left px-2 py-1 text-sm shadow-lg focus:ring-purple-400 focus:border-purple-400">
+                                <button type="submit" class="text-purple-700  bg-gray-100 hover:text-white hover:bg-purple-600 px-3 py-1 rounded-right shadow-lg">
                                     <i class="fa-solid fa-search"></i>
                                 </button>
                             </form>
                         </div>
                     </div>
+                    
                     <div class="flex justify-center items-center space-x-2">
                         <div class="relative inline-block text-left">
-                            <button onclick="toggleColumnDropdown()" class="bg-gray-100 hover:bg-yellow-400 hover:text-white text-gray-700 px-4 py-2 rounded shadow hover:shadow-lg text-sm">
-                                <i class="fa-solid fa-grip-lines-vertical"></i>
+                            <button onclick="toggleColumnDropdown()" class="bg-gray-100 hover:bg-yellow-400 hover:text-white text-yellow-500 px-4 py-2 rounded shadow hover:shadow-lg text-sm">
+                                <i class="fa-solid fa-eye-slash"></i>
+                                <!-- <i class="fa-solid fa-table-columns"></i> -->
+                                <!-- <i class="fa-solid fa-grip-lines-vertical"></i> -->
                             </button>
                             <div id="columnDropdown" class="hidden z-10 mt-2 w-48 h-64 fixed overflow-x-auto bg-white border border-gray-200 rounded shadow right-0">
                                 @foreach ($columns as $key => $label)
                                     <label class="block px-4 py-2 text-sm">
-                                        <input type="checkbox" class="column-toggle mr-2" data-column="{{ $key }}" {{ in_array($key, $savedColumns) ? 'checked' : '' }}>
+                                        <input type="checkbox" class="column-toggle mr-2 text-yellow-500 focus:ring-yellow-500 focus:border-yellow-500" data-column="{{ $key }}" {{ in_array($key, $savedColumns) ? 'checked' : '' }}>
                                         {{ $label }}
                                     </label>
                                 @endforeach
                             </div>
                         </div>
-                        <a href="{{ route('assets.create') }}" class="inline-block bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded shadow hover:shadow-lg">
+                        <a href="{{ route('assets.create') }}" class="inline-block bg-green-700 hover:bg-green-600 text-white text-sm px-4 py-2 rounded shadow hover:shadow-lg">
                             <i class="fa-solid fa-plus"></i> Asset
                         </a>
                     </div>

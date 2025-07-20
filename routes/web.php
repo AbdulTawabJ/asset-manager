@@ -77,6 +77,9 @@ Route::post('/settings/save-columns', function (Illuminate\Http\Request $request
     return response()->json(['status' => 'stored']);
 })->middleware(['auth'])->name('settings.save-columns');
 
+Route::get('/assets/query/export', [AssetController::class, 'exportQuery'])->name('assets.query.export');
+
+Route::get('/admin/export', [AssetController::class, 'export'])->name('admin.export');
 
 
 require __DIR__.'/auth.php';

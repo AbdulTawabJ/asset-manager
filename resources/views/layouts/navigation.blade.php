@@ -7,7 +7,8 @@
                     <img src="{{ asset('images/tmf-logo.png') }}" alt="TMF Logo" class="h-12 w-auto mx-auto">
                 </a>
                 <div class="text-xl font-bold text-gray-800">
-                    TMF Assets Management - {{ ucfirst(Auth::user()->role) }} Portal
+                    TMF Assets Management
+                     <!-- - {{ ucfirst(Auth::user()->role) }} Portal -->
                 </div>
             </div>
 

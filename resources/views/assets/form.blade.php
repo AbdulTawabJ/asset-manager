@@ -91,14 +91,14 @@
 
             <!-- Remarks -->
             <x-input-label for="remarks" value="Remarks" class="mt-4" />
-            <textarea name="remarks" class="block w-full">{{ old('remarks', $asset->remarks ?? '') }}</textarea>
+            <textarea name="remarks" id='remarks' class="block w-full">{{ old('remarks', $asset->remarks ?? '') }}</textarea>
             @error('remarks')
                 <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
             @enderror
 
             <!-- Requires IT Remark -->
             <label class="flex items-center mt-4">
-                <input type="checkbox" name="requires_it_remark" class="mr-2"
+                <input type="checkbox" name="requires_it_remark" id="requires_it_remark" class="mr-2"
                        {{ old('requires_it_remark', $asset->requires_it_remark ?? false) ? 'checked' : '' }}>
                 Requires IT Remark
             </label>
@@ -116,6 +116,29 @@
         Cancel
     </a>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const checkbox = document.getElementById('requires_it_remark');
+    const remarks = document.getElementById('remarks');
+
+    const updateRemarksBehavior = () => {
+        if (checkbox.checked) {
+            remarks.value = 'Pending';
+            remarks.readOnly = true;
+        } else {
+            const current = remarks.value.trim();
+            if (!current || current === 'Pending') {
+                remarks.value = 'Remarks Inapt';
+            }
+            remarks.readOnly = false;
+        }
+    };
+
+    checkbox.addEventListener('change', updateRemarksBehavior);
+
+    updateRemarksBehavior(); // Initial run on load
+});
+</script>
 
         </form>
     </div>
