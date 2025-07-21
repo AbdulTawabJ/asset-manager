@@ -7,10 +7,11 @@ use App\Models\Asset;
 use App\Models\Location;
 use App\Models\Employee;
 use App\Models\AssetType;
+use App\Models\AssetDisplay;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\StoreAssetRequest;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use Illuminate\Support\Facades\DB;
-use App\Models\AssetDisplay;
 
 
 class AssetController extends Controller
@@ -123,12 +124,33 @@ public function create()
 public function store(StoreAssetRequest $request)
 {
     $data = $request->validated();
-    $data['remarked_by'] = auth()->user()->full_name ?? auth()->user()->email;
+
+    $remark = trim($data['remarks'] ?? '');
+    $requiresIT = $request->boolean('requires_it_remark');
+
+
+    if ($requiresIT) {
+        $data['remarks'] = 'Pending';
+        $data['remarked_by'] = null;
+        $data['requires_it_remark'] = true; 
+    } elseif ($remark === '' || $remark === 'Remark Inapt') {
+        $data['remarks'] = 'Remark Inapt';
+        $data['remarked_by'] = null;
+        $data['requires_it_remark'] = false; 
+    } elseif ($remark === 'Pending') {
+        $data['remarked_by'] = null;
+        $data['requires_it_remark'] = true; 
+    } else {
+        $data['remarks'] = $remark;
+        $data['remarked_by'] = Auth::user()->name;
+        $data['requires_it_remark'] = false; 
+    }
 
     Asset::create($data);
 
     return redirect('/admin')->with('success', 'Asset added successfully.');
 }
+
 
 
     /**
@@ -156,13 +178,31 @@ public function store(StoreAssetRequest $request)
     public function update(StoreAssetRequest $request, Asset $asset)
 {
     $data = $request->validated();
-    $data['remarked_by'] = auth()->user()->full_name ?? auth()->user()->email;
+
+    $remark = trim($data['remarks'] ?? '');
+    $requiresIT = $request->boolean('requires_it_remark');
+
+    if ($requiresIT) {
+        $data['remarks'] = 'Pending';
+        $data['remarked_by'] = null;
+        $data['requires_it_remark'] = true; 
+    } elseif ($remark === '' || $remark === 'Remark Inapt') {
+        $data['remarks'] = 'Remark Inapt';
+        $data['remarked_by'] = null;
+        $data['requires_it_remark'] = false; 
+    } elseif ($remark === 'Pending') {
+        $data['remarked_by'] = null;
+        $data['requires_it_remark'] = true; 
+    } else {
+        $data['remarks'] = $remark;
+        $data['remarked_by'] = Auth::user()->name;
+        $data['requires_it_remark'] = false; 
+    }
 
     $asset->update($data);
 
     return redirect('/admin')->with('success', 'Asset updated successfully.');
 }
-
 
     /**
      * Remove the specified resource from storage.
@@ -175,65 +215,54 @@ public function store(StoreAssetRequest $request)
 }
 
 
-public function export(Request $request): StreamedResponse
+
+public function export(Request $request)
 {
-    $columns = session('visible_columns', [  // Fallback to all if none selected
-        'serial_no', 'date_of_purchase', 'type', 'description', 'amount',
-        'location', 'owner_full_name', 'remarks', 'remarked_by', 'last_updated_on',
-    ]);
+    $columnMap = [
+        'serial_no' => 'Serial No',
+        'date_of_purchase' => 'Date of Purchase',
+        'type' => 'Type',
+        'description' => 'Description',
+        'amount' => 'Amount',
+        'location' => 'Location',
+        'owner_full_name' => 'Owner',
+        'remarks' => 'Remarks',
+        'remarked_by' => 'Remarked By',
+        'last_updated_on' => 'Updated On',
+    ];
 
-    // Build query (reusing the same logic as your index method)
+    $visibleColumns = session('visible_columns', array_keys($columnMap));
+    $headers = array_map(fn($col) => $columnMap[$col] ?? $col, $visibleColumns);
+
+    // Query from the asset_display view instead of the raw table
     $query = DB::table('asset_display');
-
-    if ($search = $request->input('search')) {
+    if ($search = $request->get('search')) {
         $query->where(function ($q) use ($search) {
-            $q->where('serial_no', 'like', "%{$search}%")
-              ->orWhere('description', 'like', "%{$search}%")
-              ->orWhere('location', 'like', "%{$search}%")
-              ->orWhere('owner_full_name', 'like', "%{$search}%");
+            $q->where('serial_no', 'like', "%$search%")
+              ->orWhere('type', 'like', "%$search%")
+              ->orWhere('description', 'like', "%$search%")
+              ->orWhere('amount', 'like', "%$search%")
+              ->orWhere('location', 'like', "%$search%")
+              ->orWhere('owner_full_name', 'like', "%$search%")
+              ->orWhere('remarks', 'like', "%$search%")
+              ->orWhere('remarked_by', 'like', "%$search%");
         });
     }
 
-    if ($type = $request->input('type')) {
-        $query->where('type', $type);
-    }
-
-    if ($location = $request->input('location')) {
-        $query->where('location', $location);
-    }
-
-    if ($owner = $request->input('owner')) {
-        $query->where('owner', $owner);
-    }
-
-    // Sorting
-    $orderBy = $request->input('order_by', 'serial_no');
-    $orderDir = $request->input('order_dir', 'asc');
-    $query->orderBy($orderBy, $orderDir);
-
-    // Fetch all rows (no pagination)
     $assets = $query->get();
 
-    // Prepare streamed CSV response
-    $headers = [
-        'Content-Type' => 'text/csv',
-        'Content-Disposition' => 'attachment; filename="assets_export.csv"',
-    ];
-
-    return response()->stream(function () use ($assets, $columns) {
-        $output = fopen('php://output', 'w');
-        fputcsv($output, $columns); // Header row
-
-        foreach ($assets as $asset) {
-            $row = [];
-            foreach ($columns as $col) {
-                $row[] = $asset->$col ?? '';
-            }
-            fputcsv($output, $row);
+    $csv = implode(',', $headers) . "\n";
+    foreach ($assets as $asset) {
+        $row = [];
+        foreach ($visibleColumns as $col) {
+            $row[] = str_replace(',', ' ', $asset->$col ?? '');
         }
+        $csv .= implode(',', $row) . "\n";
+    }
 
-        fclose($output);
-    }, 200, $headers);
+    return response($csv)
+        ->header('Content-Type', 'text/csv')
+        ->header('Content-Disposition', 'attachment; filename="assets_export.csv"');
 }
 
 

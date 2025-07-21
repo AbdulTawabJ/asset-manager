@@ -108,10 +108,10 @@
 
             <!-- Submit -->
             <div class="mt-4 flex space-x-2">
-    <x-primary-button class='bg-green-800 hover:bg-green-600'>
-        {{ isset($asset) ? 'Update Asset' : 'Add Asset' }}
-    </x-primary-button>
-
+<x-primary-button
+    class="{{ isset($asset) ? 'bg-blue-600 hover:bg-blue-800' : 'bg-green-800 hover:bg-green-600' }}">
+    {{ isset($asset) ? 'Update Asset' : 'Add Asset' }}
+</x-primary-button>
     <a href="{{ url('/admin') }}" class="inline-flex items-center px-4 py-2 bg-gray-700 hover:bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition ease-in-out duration-150">
         Cancel
     </a>
@@ -119,24 +119,21 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const checkbox = document.getElementById('requires_it_remark');
-    const remarks = document.getElementById('remarks');
+    const remarksField = document.getElementById('remarks');
+    const remarksLabel = document.querySelector("label[for='remarks']") || document.querySelector("x-input-label[for='remarks']");
 
-    const updateRemarksBehavior = () => {
+    const updateRemarksVisibility = () => {
         if (checkbox.checked) {
-            remarks.value = 'Pending';
-            remarks.readOnly = true;
+            remarksField.style.display = 'none';
+            if (remarksLabel) remarksLabel.style.display = 'none';
         } else {
-            const current = remarks.value.trim();
-            if (!current || current === 'Pending') {
-                remarks.value = 'Remarks Inapt';
-            }
-            remarks.readOnly = false;
+            remarksField.style.display = '';
+            if (remarksLabel) remarksLabel.style.display = '';
         }
     };
 
-    checkbox.addEventListener('change', updateRemarksBehavior);
-
-    updateRemarksBehavior(); // Initial run on load
+    checkbox.addEventListener('change', updateRemarksVisibility);
+    updateRemarksVisibility();
 });
 </script>
 

@@ -1,12 +1,19 @@
 <?php
 
+use App\Http\Controllers\AssetHistoryController;
+use App\Http\Controllers\LocationController;
 use App\Http\Controllers\ProfileController;
-use Illuminate\Support\Facades\Route;
-use App\Models\AssetDisplay;
 use App\Http\Controllers\AssetController;
+use App\Http\Controllers\ITController;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use App\Models\AssetDisplay;
+use App\Models\Location;
 
 
+Route::bind('location', function ($value) {
+    return Location::where('location', $value)->firstOrFail();
+});
 
 Route::redirect('/', '/login');
 
@@ -78,8 +85,28 @@ Route::post('/settings/save-columns', function (Illuminate\Http\Request $request
 })->middleware(['auth'])->name('settings.save-columns');
 
 Route::get('/assets/query/export', [AssetController::class, 'exportQuery'])->name('assets.query.export');
-
 Route::get('/admin/export', [AssetController::class, 'export'])->name('admin.export');
 
+
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
+    Route::get('/locations', [LocationController::class, 'index'])->name('locations.index');
+    Route::get('/create-location', [LocationController::class, 'create'])->name('locations.create');
+    Route::post('/create-location', [LocationController::class, 'store'])->name('locations.store');
+    Route::get('/edit-location/{location}', [LocationController::class, 'edit'])->name('locations.edit');
+    Route::put('/edit-location/{location}', [LocationController::class, 'update'])->name('locations.update');
+    Route::delete('/delete-location/{location}', [LocationController::class, 'destroy'])->name('locations.destroy');
+    Route::get('/locations/export', [LocationController::class, 'export'])->name('locations.export');
+
+});
+
+Route::get('/shift-asset/{serial_no}', [AssetHistoryController::class, 'create'])->name('asset_history.create');
+Route::post('/shift-asset', [AssetHistoryController::class, 'store'])->name('asset_history.store');
+
+Route::get('/it', [ITController::class, 'index'])->middleware('auth')->name('it.dashboard');
+
+Route::middleware(['auth', 'role:it'])->group(function () {
+    Route::post('/it/remark/asset/{id}', [ITController::class, 'remarkAsset'])->name('it.remark.asset');
+    Route::post('/it/remark/shift/{id}', [ITController::class, 'remarkShift'])->name('it.remark.shift');
+});
 
 require __DIR__.'/auth.php';

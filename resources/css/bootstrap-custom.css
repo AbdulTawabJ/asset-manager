@@ -4,6 +4,9 @@
 .rounded-right{ 
  border-radius:  0% 25px 25px 0%  !important;
 }
-.border-not{
-    border: 0px;
+.bg-cyan-600 {
+    background-color: rgb(13, 172, 172) !important;
+}
+.bg-blue-800 {
+    background-color: rgb(62, 62, 228) !important;
 }

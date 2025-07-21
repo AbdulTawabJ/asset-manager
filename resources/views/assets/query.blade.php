@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-start gap-2">
-            <a href="{{ route('admin.dashboard') }}" class="bg-gray-100 hover:bg-gray-200 text-gray-900 shadow px-3 py-2 text-sm rounded">
+            <a href="{{ route('admin.dashboard') }}" class="bg-gray-100 hover:bg-gray-600 text-gray-900 hover:text-white shadow px-3 py-2 text-sm rounded">
                 <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
             </a>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
@@ -276,6 +276,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                 @endforeach
                                 <td class="sticky right-0 px-4 py-2 text-right bg-gray-700">
                                     <div class="invisible group-hover:visible flex justify-start space-x-2">
+                                        <a href="{{ route('asset_history.create', $asset->serial_no) }}" class="bg-gray-600 hover:bg-blue-400 text-blue-200 hover:text-white px-2 py-1 rounded">
+                                            <i class="fa-solid fa-hand-holding-hand"></i>
+                                        </a>
                                         <a href="{{ route('assets.edit', $asset->id) }}" class="bg-gray-600 hover:bg-blue-600 text-blue-400 hover:text-white px-2 py-1 rounded">
                                             <i class="fa-solid fa-pen"></i>
                                         </a>
