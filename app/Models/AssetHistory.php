@@ -9,7 +9,7 @@ class AssetHistory extends Model
     protected $table = 'asset_history';
 
     protected $fillable = [
-        'serial_no',
+        'asset_tag',
         'description',
         'prev_location',
         'new_location',
@@ -18,7 +18,7 @@ class AssetHistory extends Model
         'remarks',
         'remarked_by',
         'requires_it_remark',
-        'date',
+        'date', 'status',
     ];
 
     public $timestamps = false;

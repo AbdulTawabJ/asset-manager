@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ isset($location) ? 'Edit Location' : 'Add Location' }}
+            {{ isset($location) ? 'Edit Location: ' . $location->location : 'Add Location' }}
         </h2>
     </x-slot>
 

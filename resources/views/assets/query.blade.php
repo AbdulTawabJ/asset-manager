@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-start gap-2">
-            <a href="{{ route('admin.dashboard') }}" class="bg-gray-100 hover:bg-gray-600 text-gray-900 hover:text-white shadow px-3 py-2 text-sm rounded">
+            <a href="{{ route('admin.dashboard') }}" class="transition ease-in bg-gray-100 hover:bg-gray-600 text-gray-900 hover:text-white shadow px-3 py-2 text-sm rounded">
                 <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
             </a>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
@@ -12,8 +12,10 @@
 
     @php
         $columns = [
-            'serial_no' => 'Serial No',
-            'date_of_purchase' => 'Date of Purchase',
+            'asset_tag' => 'Tag',
+            'status' => 'Status',
+            'date_of_purchase' => 'Addition Date',
+            'date_of_issue' => 'Issue Date',
             'type' => 'Type',
             'description' => 'Description',
             'amount' => 'Amount',
@@ -25,8 +27,10 @@
         ];
 
         $columnTypes = [
-            'serial_no' => 'string',
+            'asset_tag' => 'string',
+            'status' => 'string',
             'date_of_purchase' => 'date',
+            'date_of_issue' => 'date',
             'type' => 'string',
             'description' => 'text',
             'amount' => 'numeric',
@@ -191,44 +195,44 @@ document.addEventListener('DOMContentLoaded', () => {
     <button type="button" id="add-condition" class="mt-2 bg-green-700 hover:bg-green-600 text-white px-3 py-1 rounded text-sm shadow hover:shadow-lg">
         <i class="fa-solid fa-plus"></i> Add Condition
     </button>
-    <div class="text-center w-100 absolute bottom-0 right-0">
-                <button type="submit" class="hover:bg-purple-600  text-gray-700 hover:text-white bg-gray-100 shadow hover:shadow-xl px-6 py-2 rounded shadow hover:shadow-lg">
-                    <i class="fa-solid fa-play"></i> Run
-                </button>
-    </div>
     
 </div>
 
 <!-- Preferences -->
 <div class='relative'>
     <h3 class="font-semibold text-gray-700 mb-2">Preferences</h3>
-                    <label class="block mb-2 text-sm">
-                        Order By:
-                        <select name="order_by" class="w-full mt-1 border rounded focus:ring-yellow-500 focus:border-yellow-500">
-                            @foreach ($columns as $key => $label)
-                            <option value="{{ $key }}" {{ request('order_by', 'serial_no') == $key ? 'selected' : '' }}>
-                                {{ $label }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </label>
+    <label class="block mb-2 text-sm">
+        Order By:
+        <select name="order_by" class="w-full mt-1 border rounded focus:ring-yellow-500 focus:border-yellow-500">
+            @foreach ($columns as $key => $label)
+            <option value="{{ $key }}" {{ request('order_by', 'asset_tag') == $key ? 'selected' : '' }}>
+                {{ $label }}
+            </option>
+            @endforeach
+        </select>
+    </label>
+    
+    <div class="text-sm mt-2 ">
+        <label class="inline-flex items-center mr-4">
+            <input type="radio" name="order_dir" value="asc" {{ request('order_dir', 'asc') == 'asc' ? 'checked' : '' }} class="mr-2 text-yellow-500 focus:ring-yellow-500 focus:border-yellow-500">
+            Ascending
+        </label>
+        <label class="inline-flex items-center">
+            <input type="radio" name="order_dir" value="desc" {{ request('order_dir') == 'desc' ? 'checked' : '' }} class="mr-2 text-yellow-500 focus:ring-yellow-500 focus:border-yellow-500">
+            Descending
+        </label>
+    </div>
+</div>
+<div class="flex text-center w-100 justify-end items-end">
+    <button type="submit" class="hover:bg-purple-600 transition ease-in text-gray-700 hover:text-white bg-gray-100 shadow hover:shadow-xl px-6 py-2 rounded shadow hover:shadow-lg">
+        <i class="fa-solid fa-play"></i> Run
+    </button>
+</div>
 
-                    <div class="text-sm mt-2 ">
-                        <label class="inline-flex items-center mr-4">
-                            <input type="radio" name="order_dir" value="asc" {{ request('order_dir', 'asc') == 'asc' ? 'checked' : '' }} class="mr-2 text-yellow-500 focus:ring-yellow-500 focus:border-yellow-500">
-                            Ascending
-                        </label>
-                        <label class="inline-flex items-center">
-                            <input type="radio" name="order_dir" value="desc" {{ request('order_dir') == 'desc' ? 'checked' : '' }} class="mr-2 text-yellow-500 focus:ring-yellow-500 focus:border-yellow-500">
-                            Descending
-                        </label>
-                    </div>
-                </div>
-            </div>
-            
-            
-        </form>
-        
+</div>
+
+</form>
+
         <!-- Advanced Query Result Table -->
         <div class="max-w-7xl mx-auto mt-4 sm:px-6 lg:px-8">
             <div class="bg-white overflow-x-auto shadow-md sm:rounded-lg">
@@ -248,7 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
             @endif
         @endforeach
 
-        <button type="submit" class="hover:bg-cyan-600  text-gray-700 hover:text-white bg-gray-100 shadow hover:shadow-xl px-4 py-1.5 rounded shadow hover:shadow-lg text-sm">
+        <button type="submit" class="transition ease-in hover:bg-cyan-600  text-gray-700 hover:text-white bg-gray-100 shadow hover:shadow-xl px-4 py-1.5 rounded shadow hover:shadow-lg text-sm">
             <i class="fa-solid fa-download mr-1"></i> Export CSV
         </button>
     </form>
@@ -276,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 @endforeach
                                 <td class="sticky right-0 px-4 py-2 text-right bg-gray-700">
                                     <div class="invisible group-hover:visible flex justify-start space-x-2">
-                                        <a href="{{ route('asset_history.create', $asset->serial_no) }}" class="bg-gray-600 hover:bg-blue-400 text-blue-200 hover:text-white px-2 py-1 rounded">
+                                        <a href="{{ route('asset_history.create', $asset->asset_tag) }}" class="bg-gray-600 hover:bg-blue-400 text-blue-200 hover:text-white px-2 py-1 rounded">
                                             <i class="fa-solid fa-hand-holding-hand"></i>
                                         </a>
                                         <a href="{{ route('assets.edit', $asset->id) }}" class="bg-gray-600 hover:bg-blue-600 text-blue-400 hover:text-white px-2 py-1 rounded">

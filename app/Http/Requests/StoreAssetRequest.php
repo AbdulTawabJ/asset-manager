@@ -25,12 +25,13 @@ class StoreAssetRequest extends FormRequest
         $assetId = $this->route('asset')?->id;
 
         return [
-            'serial_no' => [
+            'asset_tag' => [
                 'required',
                 'string',
-                Rule::unique('assets', 'serial_no')->ignore($assetId),
+                Rule::unique('assets', 'asset_tag')->ignore($assetId),
             ],
             'date_of_purchase' => 'nullable|date',
+            'date_of_issue' => 'nullable|date',
             'type' => 'required|exists:asset_types,type',
             'description' => 'nullable|string',
             'amount' => 'nullable|numeric',
@@ -38,6 +39,7 @@ class StoreAssetRequest extends FormRequest
             'owner' => 'nullable|exists:employees,file_no',
             'remarks' => 'nullable|string',
             'requires_it_remark' => 'nullable|boolean',
+            'status' => ['required', Rule::in(['None', 'Working', 'Damaged'])],
         ];
     }
 
@@ -46,5 +48,6 @@ class StoreAssetRequest extends FormRequest
         $this->merge([
             'requires_it_remark' => $this->has('requires_it_remark'),
         ]);
+
     }
 }

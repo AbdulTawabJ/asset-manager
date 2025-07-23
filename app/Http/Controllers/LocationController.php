@@ -52,13 +52,12 @@ class LocationController extends Controller
     public function destroy(Location $location)
     {
         $location->delete();
-        return redirect()->route('locations.index')->with('success', 'Location deleted successfully.');
+        return redirect()->route('locations.index')->with('error', 'Location deleted successfully.');
     }
 public function export(Request $request)
 {
     $search = $request->input('search');
-
-    $query = \App\Models\Location::query();
+    $query = Location::query();
 
     if ($search) {
         $query->where('location', 'like', "%$search%");
@@ -66,23 +65,19 @@ public function export(Request $request)
 
     $locations = $query->get();
 
-    $allColumns = [
+    $columnMap = [
         'location' => 'Location Name',
-        // Add more in the future here
     ];
 
-    // Use page-specific session key
-    $selectedColumns = session('visible_columns_locations', array_keys($allColumns));
-
-    $headers = array_map(fn($col) => $allColumns[$col] ?? $col, $selectedColumns);
+    $selectedColumns = session('visible_columns_locations', array_keys($columnMap));
+    $headers = array_merge(['Sr.'], array_map(fn($col) => $columnMap[$col] ?? $col, $selectedColumns));
 
     $csv = implode(',', $headers) . "\n";
 
-    foreach ($locations as $loc) {
-        $row = [];
+    foreach ($locations as $index => $loc) {
+        $row = [$index + 1];
         foreach ($selectedColumns as $col) {
-            $value = str_replace('"', '""', $loc->$col ?? '');
-            $row[] = "\"$value\"";
+            $row[] = str_replace(',', ' ', $loc->$col ?? '');
         }
         $csv .= implode(',', $row) . "\n";
     }
@@ -91,5 +86,6 @@ public function export(Request $request)
         ->header('Content-Type', 'text/csv')
         ->header('Content-Disposition', 'attachment; filename="locations.csv"');
 }
+
 
 }

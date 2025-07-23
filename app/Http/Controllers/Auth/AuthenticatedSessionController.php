@@ -29,13 +29,13 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         if (auth()->user()->role === 'admin') {
-    return redirect('/admin');
-} elseif (auth()->user()->role === 'it') {
-    return redirect('/it');
-} else {
-    Auth::logout();
-    abort(403, 'Unauthorized');
-}
+            return redirect('/admin')->with('success','Login Successful');
+        } elseif (auth()->user()->role === 'it') {
+            return redirect('/it')->with('success','Login Successful');
+        } else {
+            Auth::logout();
+            abort(403, 'Unauthorized');
+        }
 
     }
 
@@ -50,6 +50,6 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect('/')->with('error','Logged Out');;
     }
 }

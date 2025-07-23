@@ -21,24 +21,25 @@ class AssetController extends Controller
      * Display a listing of the resource.
      */
     public function index(Request $request)
-{
+    {
     $search = $request->input('search');
 
     $query = AssetDisplay::query();
 
     if ($search) {
         $query->where(function ($q) use ($search) {
-            $q->where('serial_no', 'like', "%{$search}%")
+            $q->where('asset_tag', 'like', "%{$search}%")
+              ->orWhere('status', 'like', "%{$search}%")
               ->orWhere('description', 'like', "%{$search}%")
               ->orWhere('type', 'like', "%{$search}%")
               ->orWhere('location', 'like', "%{$search}%")
               ->orWhere('owner_full_name', 'like', "%{$search}%") // ✅ fix: use correct field
-              ->orWhere('remarks', 'like', "%{$search}%");
+              ->orWhere('remarks', 'like', "%{$search}%")
+              ->orWhere('remarked_by', 'like', "%{$search}%");
         });
     }
 
-    $assets = $query->orderBy('id', 'desc')->paginate(4)->withQueryString(); // ✅ use the filtered query
-
+    $assets = $query->orderBy('id', 'desc')->paginate(10)->withQueryString(); // ✅ use the filtered query
     return view('admin-dashboard', compact('assets'));
 }
 
@@ -48,8 +49,10 @@ public function advancedQuery(Request $request)
 {
     
     $columns = [
-        'serial_no' => 'string',
+        'asset_tag' => 'string',
+        'status' => 'string',
         'date_of_purchase' => 'date',
+        'date_of_issue' => 'date',
         'type' => 'string',
         'description' => 'string',
         'amount' => 'numeric',
@@ -69,7 +72,7 @@ public function advancedQuery(Request $request)
     $conditionOperators = $request->input('condition_operator', []);
     $conditionValues    = $request->input('condition_value', []);
     $conditionLogics    = $request->input('condition_logic', []);
-    $orderBy            = $request->input('order_by', 'serial_no');
+    $orderBy            = $request->input('order_by', 'asset_tag');
     $orderDir           = strtolower($request->input('order_dir', 'asc')) === 'desc' ? 'desc' : 'asc';
 
     $query = DB::table('asset_display')->select($selectedFields);
@@ -104,8 +107,8 @@ public function advancedQuery(Request $request)
     logger('Bindings: ' . implode(', ', $query->bindings));
 });
 
-    $assets = $query->paginate(4)->withQueryString();
-
+    $assets = $query->paginate(20)->withQueryString();
+    session()->flash('success', 'Query Executed.');
     return view('assets.query', compact('assets'));
 }
 
@@ -211,7 +214,7 @@ public function store(StoreAssetRequest $request)
 {
     $asset->delete();
 
-    return redirect('/admin')->with('success', 'Asset deleted successfully.');
+    return redirect('/admin')->with('error', 'Asset deleted successfully.');
 }
 
 
@@ -219,8 +222,10 @@ public function store(StoreAssetRequest $request)
 public function export(Request $request)
 {
     $columnMap = [
-        'serial_no' => 'Serial No',
-        'date_of_purchase' => 'Date of Purchase',
+        'asset_tag' => 'Asset Tag',
+        'status' => 'Status',
+        'date_of_purchase' => 'Date of Addition',
+        'date_of_issue' => 'Date of Issue',
         'type' => 'Type',
         'description' => 'Description',
         'amount' => 'Amount',
@@ -232,13 +237,13 @@ public function export(Request $request)
     ];
 
     $visibleColumns = session('visible_columns', array_keys($columnMap));
-    $headers = array_map(fn($col) => $columnMap[$col] ?? $col, $visibleColumns);
+    $headers = array_merge(['Sr.'], array_map(fn($col) => $columnMap[$col] ?? $col, $visibleColumns));
 
-    // Query from the asset_display view instead of the raw table
     $query = DB::table('asset_display');
     if ($search = $request->get('search')) {
         $query->where(function ($q) use ($search) {
-            $q->where('serial_no', 'like', "%$search%")
+            $q->where('asset_tag', 'like', "%$search%")
+              ->orWhere('status', 'like', "%$search%")
               ->orWhere('type', 'like', "%$search%")
               ->orWhere('description', 'like', "%$search%")
               ->orWhere('amount', 'like', "%$search%")
@@ -252,14 +257,13 @@ public function export(Request $request)
     $assets = $query->get();
 
     $csv = implode(',', $headers) . "\n";
-    foreach ($assets as $asset) {
-        $row = [];
+    foreach ($assets as $index => $asset) {
+        $row = [$index + 1];
         foreach ($visibleColumns as $col) {
             $row[] = str_replace(',', ' ', $asset->$col ?? '');
         }
         $csv .= implode(',', $row) . "\n";
     }
-
     return response($csv)
         ->header('Content-Type', 'text/csv')
         ->header('Content-Disposition', 'attachment; filename="assets_export.csv"');
@@ -269,8 +273,10 @@ public function export(Request $request)
 public function exportQuery(Request $request)
 {
     $columns = [
-        'serial_no' => 'string',
+        'asset_tag' => 'string',
+        'status' => 'string',
         'date_of_purchase' => 'date',
+        'date_of_issue' => 'date',
         'type' => 'string',
         'description' => 'string',
         'amount' => 'numeric',
@@ -290,7 +296,7 @@ public function exportQuery(Request $request)
     $conditionOperators = $request->input('condition_operator', []);
     $conditionValues    = $request->input('condition_value', []);
     $conditionLogics    = $request->input('condition_logic', []);
-    $orderBy            = $request->input('order_by', 'serial_no');
+    $orderBy            = $request->input('order_by', 'asset_tag');
     $orderDir           = strtolower($request->input('order_dir', 'asc')) === 'desc' ? 'desc' : 'asc';
 
     $query = DB::table('asset_display')->select($selectedFields);
@@ -320,10 +326,10 @@ public function exportQuery(Request $request)
 
     return new StreamedResponse(function () use ($rows, $selectedFields) {
         $handle = fopen('php://output', 'w');
-        fputcsv($handle, $selectedFields);
+        fputcsv($handle, array_merge(['Sr.'], $selectedFields));
 
-        foreach ($rows as $row) {
-            $csvRow = [];
+        foreach ($rows as $index => $row) {
+            $csvRow = [$index + 1];
             foreach ($selectedFields as $field) {
                 $csvRow[] = $row->$field ?? '';
             }

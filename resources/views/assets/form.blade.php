@@ -1,7 +1,7 @@
 <x-app-layout>
-    <x-slot name="header">
+    <x-slot name="header"> 
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ isset($asset) ? 'Edit Asset' : 'Add New Asset' }}
+            {{ isset($asset) ? 'Edit Asset: ' .$asset->asset_tag : 'Add New Asset' }}
         </h2>
     </x-slot>
 
@@ -23,19 +23,38 @@
             @endif
 
             <!-- Serial No -->
-            <x-input-label for="serial_no" value="Serial Number" />
-            <x-text-input name="serial_no" class="block w-full" value="{{ old('serial_no', $asset->serial_no ?? '') }}" />
-            @error('serial_no')
+            <x-input-label for="asset_tag" value="Asset Tag" />
+            <x-text-input name="asset_tag" class="block w-full" value="{{ old('asset_tag', $asset->asset_tag ?? '') }}" />
+            @error('asset_tag')
                 <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
             @enderror
 
             <!-- Date of Purchase -->
-            <x-input-label for="date_of_purchase" value="Date of Purchase" class="mt-4" />
+            <x-input-label for="date_of_purchase" value="Date of Addition" class="mt-4" />
             <x-text-input type="date" name="date_of_purchase" class="block w-full" value="{{ old('date_of_purchase', $asset->date_of_purchase ?? '') }}" />
             @error('date_of_purchase')
                 <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
             @enderror
 
+            <!-- Date of Issue -->
+            <x-input-label for="date_of_issue" value="Date of Issue" />
+            <x-text-input type="date" name="date_of_issue" class="block w-full mt-1" value="{{ old('date_of_issue', $asset->date_of_issue ?? '') }}" />
+            @error('date_of_issue')
+                <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+            @enderror
+            
+            <x-input-label for="status" value="Status" class="mt-4" />
+            <select name="status" class="block w-full border rounded">
+                @foreach (['None', 'Working', 'Damaged'] as $option)
+                    <option value="{{ $option }}" @selected(old('status', $asset->status ?? 'None') === $option)>
+                        {{ $option }}
+                    </option>
+                @endforeach
+            </select>
+            @error('status')
+                <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+            @enderror
+            
             <!-- Asset Type -->
             <x-input-label for="type" value="Asset Type" class="mt-4" />
             <select name="type" class="block w-full border rounded">
@@ -108,14 +127,14 @@
 
             <!-- Submit -->
             <div class="mt-4 flex space-x-2">
-<x-primary-button
-    class="{{ isset($asset) ? 'bg-blue-600 hover:bg-blue-800' : 'bg-green-800 hover:bg-green-600' }}">
-    {{ isset($asset) ? 'Update Asset' : 'Add Asset' }}
-</x-primary-button>
-    <a href="{{ url('/admin') }}" class="inline-flex items-center px-4 py-2 bg-gray-700 hover:bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition ease-in-out duration-150">
-        Cancel
-    </a>
-</div>
+            <x-primary-button
+                class="{{ isset($asset) ? 'bg-blue-600 hover:bg-blue-800' : 'bg-green-800 hover:bg-green-600' }}">
+                {{ isset($asset) ? 'Update Asset' : 'Add Asset' }}
+            </x-primary-button>
+                <a href="{{ url('/admin') }}" class="inline-flex items-center px-4 py-2 bg-gray-700 hover:bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition ease-in-out duration-150">
+                    Cancel
+                </a>
+            </div>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const checkbox = document.getElementById('requires_it_remark');

@@ -8,8 +8,8 @@ class Asset extends Model
 {
     public $timestamps = false;
     protected $fillable = [
-        'serial_no', 'date_of_purchase', 'type', 'description',
+        'asset_tag', 'date_of_purchase', 'date_of_issue', 'type', 'description',
         'amount', 'location', 'owner', 'remarks', 'remarked_by',
-        'requires_it_remark'
+        'requires_it_remark', 'status',
     ];
 }

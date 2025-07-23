@@ -7,8 +7,10 @@
 
     @php
         $columns = [
-            'serial_no' => 'Serial No',
-            'date_of_purchase' => 'Date of Purchase',
+            'asset_tag' => 'Tag',
+            'status' => 'Status',
+            'date_of_purchase' => 'Addition Date',
+            'date_of_issue' => 'Issue Date',
             'type' => 'Type',
             'description' => 'Description',
             'amount' => 'Amount',
@@ -27,15 +29,16 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 flex justify-between items-center flex-wrap gap-2">
                     <div class="flex gap-2">
-                        <a href="#" class="bg-gray-600 text-gray-200 px-4 py-2 rounded text-sm gap-2">                                <i class="fa-solid fa-gem pr-1"></i>Assets</a>
-                        <a href="#" class="bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 px-4 py-2 rounded text-sm"><i class="fa-solid fa-hand-holding-hand pr-1"></i> Shift Log</a>
-                        <a href="#" class="bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 px-4 py-2 rounded text-sm"><i class="fa-solid fa-user pr-1"></i>Employees</a>
-                        <a href="{{ route('locations.index') }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 px-4 py-2 rounded text-sm"><i class="fa-solid fa-location-dot pr-1"></i>Locations</a>
-                        <a href="#" class="bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 px-4 py-2 rounded text-sm"><i class="fa-solid fa-layer-group pr-1"></i>Types</a>
+                        <div class=" cursor-not-allowed bg-gray-800 text-gray-200  transition ease-in px-4 py-2 rounded text-sm gap-2">                                <i class="fa-solid fa-gem pr-1"></i>Assets</div>
+                        <a href="{{ route('history.index') }}" class="bg-gray-100 transition ease-in  hover:bg-gray-200 text-gray-700 hover:text-gray-900 px-4 py-2 rounded text-sm"><i class="fa-solid fa-hand-holding-hand pr-1"></i> Shift Log</a>
+                        <a href="{{ route('employees.index') }}" class="bg-gray-100 transition ease-in  hover:bg-gray-200 text-gray-700 hover:text-gray-900 px-4 py-2 rounded text-sm"><i class="fa-solid fa-user pr-1"></i>Employees</a>
+                        <a href="{{ route('departments.index') }}" class="bg-gray-100 transition ease-in  hover:bg-gray-200 text-gray-700 hover:text-gray-900 px-4 py-2 rounded text-sm"><i class="fa-solid fa-house pr-1"></i> Departments</a>
+                        <a href="{{ route('locations.index') }}" class="bg-gray-100 transition ease-in  hover:bg-gray-200 text-gray-700 hover:text-gray-900 px-4 py-2 rounded text-sm"><i class="fa-solid fa-location-dot pr-1"></i>Locations</a>
+                        <a href="{{ route('types.index') }}" class="bg-gray-100 transition ease-in  hover:bg-gray-200 text-gray-700 hover:text-gray-900 px-4 py-2 rounded text-sm"><i class="fa-solid fa-layer-group pr-1"></i>Types</a>
                     </div>
                     
                     <div class="flex gap-2">
-                        <a href="{{ route('assets.query') }}" class="bg-purple-700 hover:bg-purple-600 text-white px-4 py-2 rounded text-sm hover:shadow-lg">
+                        <a href="{{ route('assets.query') }}" class="bg-purple-700 hover:bg-purple-600 text-white px-4 py-2 rounded text-sm shadow-lg hover:shadow-xl transition ease-in">
                             <i class="fa-solid fa-filter"></i> Advanced Query
                         </a>
                         <form method="GET" action="{{ route('admin.export') }}">
@@ -49,7 +52,7 @@
                                     <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                                 @endif
                             @endforeach
-                            <button type="submit" class="hover:bg-cyan-600  text-gray-700 hover:text-white bg-gray-100 shadow hover:shadow-xl px-4 py-2 rounded text-sm">
+                            <button type="submit" class="transition ease-in hover:bg-cyan-600  text-gray-700 hover:text-white bg-gray-100 shadow hover:shadow-xl px-4 py-2 rounded text-sm">
                                 <i class="fa-solid fa-download"></i> Export CSV
                             </button>
                         </form>
@@ -95,7 +98,7 @@
                                 @endforeach
                             </div>
                         </div>
-                        <a href="{{ route('assets.create') }}" class="inline-block bg-green-700 hover:bg-green-600 text-white text-sm px-4 py-2 rounded shadow hover:shadow-lg">
+                        <a href="{{ route('assets.create') }}" class="transition ease-in inline-block bg-green-700 hover:bg-green-600 text-white text-sm px-4 py-2 rounded shadow hover:shadow-lg">
                             <i class="fa-solid fa-plus"></i> Asset
                         </a>
                     </div>
@@ -120,7 +123,7 @@
                                 @endforeach
                                 <td class="sticky right-0 px-4 py-2 text-right bg-gray-700">
                                     <div class="invisible group-hover:visible flex justify-start space-x-2">
-                                        <a href="{{ route('asset_history.create', $asset->serial_no) }}" class="bg-gray-600 hover:bg-blue-400 text-blue-200 hover:text-white px-2 py-1 rounded">
+                                        <a href="{{ route('asset_history.create', $asset->asset_tag) }}" class="bg-gray-600 hover:bg-blue-400 text-blue-200 hover:text-white px-2 py-1 rounded">
                                             <i class="fa-solid fa-hand-holding-hand"></i>
                                         </a>
 
@@ -170,7 +173,7 @@
                             'X-CSRF-TOKEN': '{{ csrf_token() }}',
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ columns: selected })
+                        body: JSON.stringify({ columns: selected, table: 'assets' })
                     });
                 });
             });

@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Shift Asset: {{ $asset->serial_no }}
+            Shift Asset: {{ $asset->asset_tag }}
         </h2>
     </x-slot>
 
@@ -20,7 +20,7 @@
             @csrf
 
             <!-- Hidden Serial No -->
-            <input type="hidden" name="serial_no" value="{{ $asset->serial_no }}">
+            <input type="hidden" name="asset_tag" value="{{ $asset->asset_tag }}">
 
             <!-- Description -->
             <x-input-label for="description" value="Description of Shift" />
@@ -31,7 +31,7 @@
 
             <!-- Previous Location -->
             <x-input-label for="prev_location" value="Previous Location" class="mt-4" />
-            <x-text-input name="prev_location" class="block w-full" value="{{ $asset->location }}" readonly />
+            <x-text-input name="prev_location" class=" cursor-not-allowed block w-full" value="{{ $asset->location }}" readonly />
 
             <!-- New Location -->
             <x-input-label for="new_location" value="New Location" class="mt-4" />
@@ -48,7 +48,7 @@
 
             <!-- Previous Owner -->
             <x-input-label for="prev_owner" value="Previous Owner" class="mt-4" />
-            <x-text-input name="prev_owner" class="block w-full" value="{{ $asset->owner }}" readonly />
+            <x-text-input name="prev_owner" class=" cursor-not-allowed block w-full" value="{{ $asset->owner }}" readonly />
 
             <!-- New Owner -->
             <x-input-label for="new_owner" value="New Owner" class="mt-4" />
@@ -60,6 +60,18 @@
                 @endforeach
             </select>
             @error('new_owner')
+                <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+            @enderror
+            
+            <x-input-label for="status" value="Shift Status" class="mt-4" />
+            <select name="status" class="block w-full border rounded">
+                @foreach (['None', 'Working', 'Damaged'] as $option)
+                    <option value="{{ $option }}" @selected(old('status') == $option)>
+                        {{ $option }}
+                    </option>
+                @endforeach
+            </select>
+            @error('status')
                 <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
             @enderror
 
