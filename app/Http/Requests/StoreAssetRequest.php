@@ -30,6 +30,7 @@ class StoreAssetRequest extends FormRequest
                 'string',
                 Rule::unique('assets', 'asset_tag')->ignore($assetId),
             ],
+            'serial' => 'nullable|string|max:255',
             'date_of_purchase' => 'nullable|date',
             'date_of_issue' => 'nullable|date',
             'type' => 'required|exists:asset_types,type',

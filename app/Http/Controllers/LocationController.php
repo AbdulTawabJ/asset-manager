@@ -29,8 +29,40 @@ class LocationController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate(['location' => 'required|string|unique:locations,location']);
-        Location::create($request->only('location'));
+        $request->validate([
+            'region' => 'required|string|not_regex:/[-\/:>0<~`]/',
+            'area' => 'nullable|string|not_regex:/[-\/:>0<~`]/',
+            'branch' => 'nullable|string|not_regex:/[-\/:>0<~`]/',
+            'department' => 'nullable|string|not_regex:/[-\/:>0<~`]/',
+        ]);
+
+        $region = $request->input('region');
+        $area = $request->input('area');
+        $branch = $request->input('branch');
+        $department = $request->input('department');
+
+        // Hierarchy check
+        if (!$region) {
+            return back()->withErrors(['region' => 'Region is required.']);
+        }
+        if ($branch && !$area) {
+            return back()->withErrors(['area' => 'Area is required if Branch is provided.']);
+        }
+        if ($department && (!$area || !$branch)) {
+            return back()->withErrors(['department' => 'Area and Branch are required if Department is provided.']);
+        }
+
+        // Build location string based on level
+        $parts = [$region];
+        if ($area) $parts[] = $area;
+        if ($branch) $parts[] = $branch;
+        if ($department) $parts[] = $department;
+
+        $locationStr = implode('-', $parts);
+
+
+        Location::create(['location' => $locationStr]);
+
         return redirect()->route('locations.index')->with('success', 'Location added successfully.');
     }
 
@@ -42,10 +74,39 @@ class LocationController extends Controller
     public function update(Request $request, Location $location)
     {
         $request->validate([
-    'location' => 'required|string|unique:locations,location,' . $location->location . ',location'
-]);
+            'region' => 'required|string|not_regex:/[-\/:>0<~`]/',
+            'area' => 'nullable|string|not_regex:/[-\/:>0<~`]/',
+            'branch' => 'nullable|string|not_regex:/[-\/:>0<~`]/',
+            'department' => 'nullable|string|not_regex:/[-\/:>0<~`]/',
+        ]);
 
-        $location->update($request->only('location'));
+
+        $region = $request->input('region');
+        $area = $request->input('area');
+        $branch = $request->input('branch');
+        $department = $request->input('department');
+
+        // Hierarchy check
+        if (!$region) {
+            return back()->withErrors(['region' => 'Region is required.']);
+        }
+        if ($branch && !$area) {
+            return back()->withErrors(['area' => 'Area is required if Branch is provided.']);
+        }
+        if ($department && (!$area || !$branch)) {
+            return back()->withErrors(['department' => 'Area and Branch are required if Department is provided.']);
+        }
+        
+        // Build location string based on level
+        $parts = [$region];
+        if ($area) $parts[] = $area;
+        if ($branch) $parts[] = $branch;
+        if ($department) $parts[] = $department;
+        
+        $locationStr = implode('-', $parts);
+
+        $location->update(['location' => $locationStr]);
+
         return redirect()->route('locations.index')->with('success', 'Location updated successfully.');
     }
 

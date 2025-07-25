@@ -4,6 +4,9 @@
             {{ isset($location) ? 'Edit Location: ' . $location->location : 'Add Location' }}
         </h2>
     </x-slot>
+    @php
+    $parts = explode('-', $location->location ?? '');
+@endphp
 
     <div class="py-6 max-w-xl mx-auto">
         @if ($errors->any())
@@ -21,13 +24,25 @@
             @csrf
             @if(isset($location)) @method('PUT') @endif
 
-            <x-input-label for="location" value="Location Name" />
-            <x-text-input name="location" class="block w-full" value="{{ old('location', $location->location ?? '') }}" />
-            @error('location')
-                <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
-            @enderror
+            <!-- Region -->
+            <x-input-label for="region" value="Region" />
+            <x-text-input name="region" class="block w-full" value="{{ old('region', $parts[0] ?? '') }}" pattern="^[^/-]+$" />
+            @error('region')<p class="text-sm text-red-600 mt-1">{{ $message }}</p>@enderror
 
+            <!-- Area -->
+            <x-input-label for="area" value="Area" class="mt-4" />
+            <x-text-input name="area" class="block w-full" value="{{ old('area', $parts[1] ?? '') }}" pattern="^[^/-]+$" />
+            @error('area')<p class="text-sm text-red-600 mt-1">{{ $message }}</p>@enderror
 
+            <!-- Branch -->
+            <x-input-label for="branch" value="Branch" class="mt-4" />
+            <x-text-input name="branch" class="block w-full" value="{{ old('branch', $parts[2] ?? '') }}" pattern="^[^/-]+$" />
+            @error('branch')<p class="text-sm text-red-600 mt-1">{{ $message }}</p>@enderror
+
+            <!-- Department -->
+            <x-input-label for="department" value="Department" class="mt-4" />
+            <x-text-input name="department" class="block w-full" value="{{ old('department', $parts[3] ?? '') }}" pattern="^[^/-]+$" />
+            @error('department')<p class="text-sm text-red-600 mt-1">{{ $message }}</p>@enderror
             
             <div class="mt-4 flex space-x-2">
 <x-primary-button
@@ -40,4 +55,27 @@
             </div>
         </form>
     </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const regionInput = document.querySelector('input[name="region"]');
+        const areaInput = document.querySelector('input[name="area"]');
+        const branchInput = document.querySelector('input[name="branch"]');
+        const departmentInput = document.querySelector('input[name="department"]');
+
+        function updateState() {
+            areaInput.disabled = !regionInput.value.trim();
+            branchInput.disabled = !areaInput.value.trim();
+            departmentInput.disabled = !branchInput.value.trim();
+        }
+
+        // Bind events
+        regionInput.addEventListener('input', updateState);
+        areaInput.addEventListener('input', updateState);
+        branchInput.addEventListener('input', updateState);
+
+        // Run once on load
+        updateState();
+    });
+</script>
+
 </x-app-layout>

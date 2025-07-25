@@ -155,7 +155,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
 
 });
 
-Route::get('/shift-asset/{asset_tag}', [AssetHistoryController::class, 'create'])->name('asset_history.create');
+Route::get('/shift-asset/{id}', [AssetHistoryController::class, 'create'])->name('asset_history.create');
 Route::post('/shift-asset', [AssetHistoryController::class, 'store'])->name('asset_history.store');
 
 Route::get('/it', [ITController::class, 'index'])->middleware('auth')->name('it.dashboard');

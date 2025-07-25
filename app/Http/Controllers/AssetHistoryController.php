@@ -16,9 +16,9 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class AssetHistoryController extends Controller
 
 {
-    public function create($asset_tag)
+    public function create($id)
     {
-        $asset = Asset::where('asset_tag', $asset_tag)->firstOrFail();
+        $asset = Asset::findOrFail($id);
         $employees = Employee::all();
         $locations = Location::all();
 
@@ -78,16 +78,24 @@ class AssetHistoryController extends Controller
         $search = $request->input('search');
         $query = AssetHistory::query();
 
-        if ($search) {
-            $query->where('asset_tag', 'like', "%$search%")
-                ->orWhere('description', 'like', "%$search%")
-                ->orWhere('prev_owner', 'like', "%$search%")
-                ->orWhere('new_owner', 'like', "%$search%")
-                ->orWhere('prev_location', 'like', "%$search%")
-                ->orWhere('new_location', 'like', "%$search%")
-                ->orWhere('remarks', 'like', "%$search%")
-                ->orWhere('status', 'like', "%$search%");
-        }
+        $searchColumn = $request->input('search_column', 'all');
+if ($search) {
+    if ($searchColumn === 'all') {
+        $query->where(function ($q) use ($search) {
+            $q->where('asset_tag', 'like', "%$search%")
+              ->orWhere('description', 'like', "%$search%")
+              ->orWhere('prev_owner', 'like', "%$search%")
+              ->orWhere('new_owner', 'like', "%$search%")
+              ->orWhere('prev_location', 'like', "%$search%")
+              ->orWhere('new_location', 'like', "%$search%")
+              ->orWhere('remarks', 'like', "%$search%")
+              ->orWhere('status', 'like', "%$search%");
+        });
+    } else {
+        $query->where($searchColumn, 'like', "%$search%");
+    }
+}
+
 
         $history = $query->orderBy('date', 'desc')->paginate(15);
         return view('admin-history', compact('history'));
@@ -133,18 +141,25 @@ class AssetHistoryController extends Controller
     public function export(Request $request)
     {
         $search = $request->input('search');
-        $query = AssetHistory::query();
+$searchColumn = $request->input('search_column', 'all');
 
-        if ($search) {
-            $query->where('asset_tag', 'like', "%$search%")
-                ->orWhere('description', 'like', "%$search%")
-                ->orWhere('prev_owner', 'like', "%$search%")
-                ->orWhere('new_owner', 'like', "%$search%")
-                ->orWhere('prev_location', 'like', "%$search%")
-                ->orWhere('new_location', 'like', "%$search%")
-                ->orWhere('remarks', 'like', "%$search%")
-                ->orWhere('status', 'like', "%$search%");
-        }
+if ($search) {
+    if ($searchColumn === 'all') {
+        $query->where(function ($q) use ($search) {
+            $q->where('asset_tag', 'like', "%$search%")
+              ->orWhere('description', 'like', "%$search%")
+              ->orWhere('prev_owner', 'like', "%$search%")
+              ->orWhere('new_owner', 'like', "%$search%")
+              ->orWhere('prev_location', 'like', "%$search%")
+              ->orWhere('new_location', 'like', "%$search%")
+              ->orWhere('remarks', 'like', "%$search%")
+              ->orWhere('status', 'like', "%$search%");
+        });
+    } else {
+        $query->where($searchColumn, 'like', "%$search%");
+    }
+}
+
 
         $records = $query->get();
 
@@ -162,7 +177,7 @@ class AssetHistoryController extends Controller
             'status' => 'Status',
         ];
 
-        $selectedColumns = session('visible_columns_history', array_keys($columnMap));
+        $selectedColumns = session('visible_columns_asset_history', array_keys($columnMap));
         $headers = array_merge(['Sr.'], array_map(fn($col) => $columnMap[$col] ?? $col, $selectedColumns));
 
         $csv = implode(',', $headers) . "\n";
@@ -197,8 +212,11 @@ public function exportQuery(Request $request)
     ];
 
     $selectedFields = $request->input('fields', array_keys($columns));
+    $includeId = false;
     if (!in_array('id', $selectedFields)) {
-        $selectedFields[] = 'id'; // assuming your asset_history table has an 'id' PK
+        $selectedFields[] = 'id'; // Required for internal reference, excluded from output
+    } else {
+        $includeId = true;
     }
 
     $query = DB::table('asset_history')->select($selectedFields);
@@ -210,19 +228,41 @@ public function exportQuery(Request $request)
     $orderBy            = $request->input('order_by', 'date');
     $orderDir           = strtolower($request->input('order_dir', 'desc')) === 'desc' ? 'desc' : 'asc';
 
-    $query->where(function ($q) use ($conditionColumns, $conditionOperators, $conditionValues, $conditionLogics) {
+    // Map for location parts
+    $map = [
+        'prev_region'      => ['column' => 'prev_location', 'index' => 1],
+        'prev_area'        => ['column' => 'prev_location', 'index' => 2],
+        'prev_branch'      => ['column' => 'prev_location', 'index' => 3],
+        'prev_department'  => ['column' => 'prev_location', 'index' => 4],
+        'new_region'       => ['column' => 'new_location', 'index' => 1],
+        'new_area'         => ['column' => 'new_location', 'index' => 2],
+        'new_branch'       => ['column' => 'new_location', 'index' => 3],
+        'new_department'   => ['column' => 'new_location', 'index' => 4],
+    ];
+
+    $query->where(function ($q) use ($conditionColumns, $conditionOperators, $conditionValues, $conditionLogics, $map) {
         for ($i = 0; $i < count($conditionColumns); $i++) {
             $col = $conditionColumns[$i];
             $op  = $conditionOperators[$i];
             $val = $conditionValues[$i];
             $logic = strtoupper($conditionLogics[$i - 1] ?? 'AND');
 
+            $clause = function ($query) use ($col, $op, $val, $map) {
+                if (isset($map[$col])) {
+                    $loc = $map[$col]['column'];
+                    $idx = $map[$col]['index'];
+                    $query->whereRaw("SUBSTRING_INDEX(SUBSTRING_INDEX($loc, '-', {$idx}), '-', -1) $op ?", [$val]);
+                } else {
+                    $query->where($col, $op, $val);
+                }
+            };
+
             if ($i === 0) {
-                $q->where($col, $op, $val);
+                $q->where($clause);
             } else {
                 $logic === 'OR'
-                    ? $q->orWhere($col, $op, $val)
-                    : $q->where($col, $op, $val);
+                    ? $q->orWhere($clause)
+                    : $q->where($clause);
             }
         }
     });
@@ -233,22 +273,36 @@ public function exportQuery(Request $request)
 
     $rows = $query->get();
 
-    return new StreamedResponse(function () use ($rows, $selectedFields) {
+    return new StreamedResponse(function () use ($rows, $selectedFields, $includeId) {
         $handle = fopen('php://output', 'w');
-        fputcsv($handle, array_merge(['Sr.'], $selectedFields));
+
+        // Header
+        $headers = ['Sr.'];
+        foreach ($selectedFields as $field) {
+            if ($field !== 'id') {
+                $headers[] = $field;
+            }
+        }
+        fputcsv($handle, $headers);
+
+        // Rows
         foreach ($rows as $index => $row) {
             $csvRow = [$index + 1];
             foreach ($selectedFields as $field) {
-                $csvRow[] = $row->$field ?? '';
+                if ($field !== 'id') {
+                    $csvRow[] = $row->$field ?? '';
+                }
             }
             fputcsv($handle, $csvRow);
         }
+
         fclose($handle);
     }, 200, [
         'Content-Type' => 'text/csv',
         'Content-Disposition' => 'attachment; filename="asset_history_advanced_query.csv"',
     ]);
 }
+
 public function advancedQuery(Request $request)
 {
     $columns = [
@@ -299,19 +353,42 @@ public function advancedQuery(Request $request)
     $orderBy            = $request->input('order_by', 'date');
     $orderDir           = strtolower($request->input('order_dir', 'desc')) === 'desc' ? 'desc' : 'asc';
 
-    $query->where(function ($q) use ($conditionColumns, $conditionOperators, $conditionValues, $conditionLogics) {
+    // Location part mapping
+    $map = [
+        'prev_region'      => ['column' => 'prev_location', 'index' => 1],
+        'prev_area'        => ['column' => 'prev_location', 'index' => 2],
+        'prev_branch'      => ['column' => 'prev_location', 'index' => 3],
+        'prev_department'  => ['column' => 'prev_location', 'index' => 4],
+        'new_region'       => ['column' => 'new_location', 'index' => 1],
+        'new_area'         => ['column' => 'new_location', 'index' => 2],
+        'new_branch'       => ['column' => 'new_location', 'index' => 3],
+        'new_department'   => ['column' => 'new_location', 'index' => 4],
+    ];
+
+    // Apply filters
+    $query->where(function ($q) use ($conditionColumns, $conditionOperators, $conditionValues, $conditionLogics, $map) {
         for ($i = 0; $i < count($conditionColumns); $i++) {
-            $col = $conditionColumns[$i];
-            $op  = $conditionOperators[$i];
-            $val = $conditionValues[$i];
+            $col   = $conditionColumns[$i];
+            $op    = $conditionOperators[$i];
+            $val   = $conditionValues[$i];
             $logic = strtoupper($conditionLogics[$i - 1] ?? 'AND');
 
+            $clause = function ($subQ) use ($col, $op, $val, $map) {
+                if (isset($map[$col])) {
+                    $loc = $map[$col]['column'];
+                    $idx = $map[$col]['index'];
+                    $subQ->whereRaw("SUBSTRING_INDEX(SUBSTRING_INDEX($loc, '-', {$idx}), '-', -1) $op ?", [$val]);
+                } else {
+                    $subQ->where($col, $op, $val);
+                }
+            };
+
             if ($i === 0) {
-                $q->where($col, $op, $val);
+                $q->where($clause);
             } else {
                 $logic === 'OR'
-                    ? $q->orWhere($col, $op, $val)
-                    : $q->where($col, $op, $val);
+                    ? $q->orWhere($clause)
+                    : $q->where($clause);
             }
         }
     });
@@ -323,8 +400,8 @@ public function advancedQuery(Request $request)
     $history = $query->paginate(20)->appends($request->except('page'));
 
     return view('history.query', compact('history', 'columns', 'columnTypes', 'operators'));
-
 }
+
 
 
 }

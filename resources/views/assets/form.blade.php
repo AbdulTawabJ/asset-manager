@@ -22,10 +22,16 @@
                 @method('PUT')
             @endif
 
-            <!-- Serial No -->
+            <!-- Asset Tag -->
             <x-input-label for="asset_tag" value="Asset Tag" />
             <x-text-input name="asset_tag" class="block w-full" value="{{ old('asset_tag', $asset->asset_tag ?? '') }}" />
             @error('asset_tag')
+                <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+            @enderror
+            <!-- Serial Number -->
+            <x-input-label for="serial" value="Serial Number" />
+            <x-text-input name="serial" class="block w-full" value="{{ old('serial', $asset->serial ?? '') }}" />
+            @error('serial')
                 <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
             @enderror
 

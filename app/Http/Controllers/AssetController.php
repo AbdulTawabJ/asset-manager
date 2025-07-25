@@ -23,21 +23,28 @@ class AssetController extends Controller
     public function index(Request $request)
     {
     $search = $request->input('search');
+$searchColumn = $request->input('search_column', 'all');
+$query = AssetDisplay::query();
 
-    $query = AssetDisplay::query();
-
-    if ($search) {
-        $query->where(function ($q) use ($search) {
+if ($search) {
+    $query->where(function ($q) use ($search, $searchColumn) {
+        if ($searchColumn === 'all') {
             $q->where('asset_tag', 'like', "%{$search}%")
+              ->orWhere('serial', 'like', "%{$search}%")
               ->orWhere('status', 'like', "%{$search}%")
               ->orWhere('description', 'like', "%{$search}%")
               ->orWhere('type', 'like', "%{$search}%")
+              ->orWhere('amount', 'like', "%{$search}%")
               ->orWhere('location', 'like', "%{$search}%")
-              ->orWhere('owner_full_name', 'like', "%{$search}%") // ✅ fix: use correct field
+              ->orWhere('owner_full_name', 'like', "%{$search}%")
               ->orWhere('remarks', 'like', "%{$search}%")
               ->orWhere('remarked_by', 'like', "%{$search}%");
-        });
-    }
+        } else {
+            $q->where($searchColumn, 'like', "%{$search}%");
+        }
+    });
+}
+
 
     $assets = $query->orderBy('id', 'desc')->paginate(10)->withQueryString(); // ✅ use the filtered query
     return view('admin-dashboard', compact('assets'));
@@ -50,6 +57,7 @@ public function advancedQuery(Request $request)
     
     $columns = [
         'asset_tag' => 'string',
+        'serial' => 'string',
         'status' => 'string',
         'date_of_purchase' => 'date',
         'date_of_issue' => 'date',
@@ -80,22 +88,33 @@ public function advancedQuery(Request $request)
     $query->where(function ($q) use ($conditionColumns, $conditionOperators, $conditionValues, $conditionLogics) {
         $first = true;
 
-        for ($i = 0; $i < count($conditionColumns); $i++) {
+        $map = ['region' => 1, 'area' => 2, 'branch' => 3, 'department' => 4]; // 1-based index for split_part
+
+for ($i = 0; $i < count($conditionColumns); $i++) {
     $col = $conditionColumns[$i];
     $op = $conditionOperators[$i];
     $val = $conditionValues[$i];
-    $logic = strtoupper($conditionLogics[$i - 1] ?? 'AND'); // ✅ shift logic
+    $logic = strtoupper($conditionLogics[$i - 1] ?? 'AND');
+
+    $clause = function ($query) use ($col, $op, $val, $map) {
+        if (isset($map[$col])) {
+            $query->whereRaw("SUBSTRING_INDEX(SUBSTRING_INDEX(location, '-', {$map[$col]}), '-', -1) $op ?", [$val]);
+        } else {
+            $query->where($col, $op, $val);
+        }
+    };
 
     if ($i === 0) {
-        $q->where($col, $op, $val); // always start with where
+        $q->where(fn($query) => $clause($query));
     } else {
         if ($logic === 'OR') {
-            $q->orWhere($col, $op, $val);
+            $q->orWhere(fn($query) => $clause($query));
         } else {
-            $q->where($col, $op, $val);
+            $q->where(fn($query) => $clause($query));
         }
     }
 }
+
 
     });
 
@@ -224,6 +243,7 @@ public function export(Request $request)
     $columnMap = [
         'asset_tag' => 'Asset Tag',
         'status' => 'Status',
+        'serial' => 'Serial',
         'date_of_purchase' => 'Date of Addition',
         'date_of_issue' => 'Date of Issue',
         'type' => 'Type',
@@ -236,13 +256,18 @@ public function export(Request $request)
         'last_updated_on' => 'Updated On',
     ];
 
-    $visibleColumns = session('visible_columns', array_keys($columnMap));
+    $visibleColumns = session('visible_columns_assets', array_keys($columnMap));
     $headers = array_merge(['Sr.'], array_map(fn($col) => $columnMap[$col] ?? $col, $visibleColumns));
 
     $query = DB::table('asset_display');
-    if ($search = $request->get('search')) {
-        $query->where(function ($q) use ($search) {
+    $search = $request->get('search');
+$searchColumn = $request->get('search_column', 'all');
+
+if ($search) {
+    $query->where(function ($q) use ($search, $searchColumn) {
+        if ($searchColumn === 'all') {
             $q->where('asset_tag', 'like', "%$search%")
+              ->orWhere('serial', 'like', "%{$search}%")
               ->orWhere('status', 'like', "%$search%")
               ->orWhere('type', 'like', "%$search%")
               ->orWhere('description', 'like', "%$search%")
@@ -251,8 +276,12 @@ public function export(Request $request)
               ->orWhere('owner_full_name', 'like', "%$search%")
               ->orWhere('remarks', 'like', "%$search%")
               ->orWhere('remarked_by', 'like', "%$search%");
-        });
-    }
+        } else {
+            $q->where($searchColumn, 'like', "%$search%");
+        }
+    });
+}
+
 
     $assets = $query->get();
 
@@ -274,6 +303,7 @@ public function exportQuery(Request $request)
 {
     $columns = [
         'asset_tag' => 'string',
+        'serial' => 'string',
         'status' => 'string',
         'date_of_purchase' => 'date',
         'date_of_issue' => 'date',
@@ -302,18 +332,30 @@ public function exportQuery(Request $request)
     $query = DB::table('asset_display')->select($selectedFields);
 
     $query->where(function ($q) use ($conditionColumns, $conditionOperators, $conditionValues, $conditionLogics) {
+        $map = ['region' => 1, 'area' => 2, 'branch' => 3, 'department' => 4];
+
         for ($i = 0; $i < count($conditionColumns); $i++) {
             $col = $conditionColumns[$i];
-            $op  = $conditionOperators[$i];
+            $op = $conditionOperators[$i];
             $val = $conditionValues[$i];
             $logic = strtoupper($conditionLogics[$i - 1] ?? 'AND');
 
+            $clause = function ($query) use ($col, $op, $val, $map) {
+                if (isset($map[$col])) {
+                    $query->whereRaw("SUBSTRING_INDEX(SUBSTRING_INDEX(location, '-', {$map[$col]}), '-', -1) $op ?", [$val]);
+                } else {
+                    $query->where($col, $op, $val);
+                }
+            };
+
             if ($i === 0) {
-                $q->where($col, $op, $val);
+                $q->where(fn($query) => $clause($query));
             } else {
-                $logic === 'OR'
-                    ? $q->orWhere($col, $op, $val)
-                    : $q->where($col, $op, $val);
+                if ($logic === 'OR') {
+                    $q->orWhere(fn($query) => $clause($query));
+                } else {
+                    $q->where(fn($query) => $clause($query));
+                }
             }
         }
     });
@@ -323,25 +365,39 @@ public function exportQuery(Request $request)
     }
 
     $rows = $query->get();
+$selectedParts = $request->input('location_parts', ['region','area','branch','department']);
+$exportFields = array_filter($selectedFields, fn($f) => $f !== 'id'); // ✅ Strip ID for CSV
 
-    return new StreamedResponse(function () use ($rows, $selectedFields) {
-        $handle = fopen('php://output', 'w');
-        fputcsv($handle, array_merge(['Sr.'], $selectedFields));
+return new StreamedResponse(function () use ($rows, $exportFields, $selectedParts) {
+    $handle = fopen('php://output', 'w');
+    fputcsv($handle, array_merge(['Sr.'], $exportFields));
 
-        foreach ($rows as $index => $row) {
-            $csvRow = [$index + 1];
-            foreach ($selectedFields as $field) {
+    foreach ($rows as $index => $row) {
+        $csvRow = [$index + 1];
+        foreach ($exportFields as $field) {
+            if ($field === 'location') {
+                $parts = explode('-', $row->location ?? '');
+                $map = ['region' => 0, 'area' => 1, 'branch' => 2, 'department' => 3];
+                $displayParts = [];
+                foreach ($selectedParts as $part) {
+                    $idx = $map[$part];
+                    $displayParts[] = $parts[$idx] ?? '';
+                }
+                $csvRow[] = implode('-', $displayParts);
+            } else {
                 $csvRow[] = $row->$field ?? '';
             }
-            fputcsv($handle, $csvRow);
         }
+        fputcsv($handle, $csvRow);
+    }
 
-        fclose($handle);
-    }, 200, [
-        'Content-Type' => 'text/csv',
-        'Content-Disposition' => 'attachment; filename="advanced_query_export.csv"',
-    ]);
+    fclose($handle);
+}, 200, [
+    'Content-Type' => 'text/csv',
+    'Content-Disposition' => 'attachment; filename="advanced_query_export.csv"',
+]);
 }
+
 
 
 }

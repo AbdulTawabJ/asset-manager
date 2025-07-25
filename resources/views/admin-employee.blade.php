@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Employees
+            Manage Employees
         </h2>
     </x-slot>
 
@@ -24,7 +24,7 @@
                     <div class="flex gap-2">
                         <a href="{{ route('admin.dashboard') }}" class="transition ease-in bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 px-4 py-2 rounded text-sm">
                             <i class="fa-solid fa-gem pr-1"></i>Assets</a>
-                        <a href="{{ route('history.index') }}" class="transition ease-in bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 px-4 py-2 rounded text-sm"><i class="fa-solid fa-hand-holding-hand pr-1"></i> Shift Log</a>
+                        <a href="{{ route('history.index') }}" class="transition ease-in bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 px-4 py-2 rounded text-sm"><i class="fa-solid fa-hand-holding-hand pr-1"></i> Asset Movement</a>
                         <div class = "transition ease-in cursor-not-allowed bg-gray-800 text-white px-4 py-2 rounded text-sm"><i class="fa-solid fa-user pr-1"></i> Employees</div>
                         <a href="{{ route('departments.index') }}" class="transition ease-in bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 px-4 py-2 rounded text-sm"><i class="fa-solid fa-house pr-1"></i> Departments</a>
                         <a href="{{ route('locations.index') }}" class="transition ease-in bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 px-4 py-2 rounded text-sm"><i class="fa-solid fa-location-dot pr-1"></i> Locations</a>
@@ -33,7 +33,7 @@
 
                     <div class="flex gap-2">
                         <div class = "cursor-not-allowed bg-purple-400 text-gray-200 px-4 py-2 rounded text-sm">
-                            <i class="fa-solid fa-filter"></i> Advanced Query
+                            <i class="fa-solid fa-filter"></i> Custom Report
     </div>
                         <form method="GET" action="{{ route('employees.export') }}">
                             <input type="hidden" name="search" value="{{ request('search') }}">

@@ -5,7 +5,7 @@
                 <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
             </a>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Advanced Query
+                Custom Search
             </h2>
         </div>
     </x-slot>
@@ -13,6 +13,7 @@
     @php
         $columns = [
             'asset_tag' => 'Tag',
+            'serial' => 'Serial',
             'status' => 'Status',
             'date_of_purchase' => 'Addition Date',
             'date_of_issue' => 'Issue Date',
@@ -28,6 +29,7 @@
 
         $columnTypes = [
             'asset_tag' => 'string',
+            'serial' => 'string',
             'status' => 'string',
             'date_of_purchase' => 'date',
             'date_of_issue' => 'date',
@@ -39,6 +41,10 @@
             'remarks' => 'text',
             'remarked_by' => 'string',
             'last_updated_on' => 'datetime',
+            'region' => 'string',
+        'area' => 'string',
+        'branch' => 'string',
+        'department' => 'string',
         ];
 
         $operators = [
@@ -55,28 +61,32 @@
     const columnTypes = @json($columnTypes);
 
     function createConditionRow() {
-        const row = document.createElement('div');
-        row.className = 'condition-group mb-4 flex flex-col space-y-2 md:space-y-0 md:flex-row md:space-x-2 items-start md:items-end';
-        row.innerHTML = `
-            <select name="condition_column[]" class="w-full md:w-1/3 border rounded condition-column focus:ring-yellow-500 focus:border-yellow-500">
-                @foreach ($columns as $key => $label)
-                    <option value="{{ $key }}">{{ $label }}</option>
-                @endforeach
-            </select>
+    const row = document.createElement('div');
+    row.className = 'condition-group mb-4 flex flex-col space-y-2 md:space-y-0 md:flex-row md:space-x-2 items-start md:items-end';
+    row.innerHTML = `
+        <select name="condition_column[]" class="w-full md:w-1/3 border rounded condition-column focus:ring-yellow-500 focus:border-yellow-500">
+            @foreach ($columns as $key => $label)
+                <option value="{{ $key }}">{{ $label }}</option>
+            @endforeach
+            @foreach (['region', 'area', 'branch', 'department'] as $locPart)
+                <option value="{{ $locPart }}">{{ ucfirst($locPart) }}</option>
+            @endforeach
+        </select>
 
-            <select name="condition_operator[]" class="w-full md:w-1/4 border rounded condition-operator focus:ring-yellow-500 focus:border-yellow-500"></select>
+        <select name="condition_operator[]" class="w-full md:w-1/4 border rounded condition-operator focus:ring-yellow-500 focus:border-yellow-500"></select>
 
-            <input type="text" name="condition_value[]" class="w-full md:w-1/3 border rounded condition-value focus:ring-yellow-500 focus:border-yellow-500" placeholder="Value">
+        <input type="text" name="condition_value[]" class="w-full md:w-1/3 border rounded condition-value focus:ring-yellow-500 focus:border-yellow-500" placeholder="Value">
 
-            <select name="condition_logic[]" class="w-full md:w-1/6 border rounded focus:ring-yellow-500 focus:border-yellow-500">
-                <option value="AND">AND</option>
-                <option value="OR">OR</option>
-            </select>
+        <select name="condition_logic[]" class="w-full md:w-1/6 border rounded focus:ring-yellow-500 focus:border-yellow-500">
+            <option value="AND">AND</option>
+            <option value="OR">OR</option>
+        </select>
 
-            <button type="button" class="remove-condition bg-transparent text-red-500 hover:bg-gray-200 px-1 bottom-2 rounded-full" ><i class="fa-solid fa-circle-xmark"></i></button>
-        `;
-        return row;
-    }
+        <button type="button" class="remove-condition bg-transparent text-red-500 hover:bg-gray-200 px-1 bottom-2 rounded-full" ><i class="fa-solid fa-circle-xmark"></i></button>
+    `;
+    return row;
+}
+
 
     function updateOperators(row) {
         const column = row.querySelector('.condition-column').value;
@@ -143,37 +153,57 @@ document.addEventListener('DOMContentLoaded', () => {
 
     <div class="py-12">
         <!-- Query Builder UI -->
-        <form method="GET" action="{{ route('assets.query') }}" class="max-w-7xl mx-auto sm:px-6 lg:px-8 mb-6">
+        <form method="GET" action="{{ route('assets.query') }}" target="_blank" class="max-w-7xl mx-auto sm:px-6 lg:px-8 mb-6">
             <div class="bg-white shadow rounded-lg p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Fields -->
                 <div>
-                    <h3 class="font-semibold text-gray-700 mb-2">Fields</h3>
+                    <h3 class="font-semibold text-gray-700 mb-2">Columns</h3>
                     @foreach ($columns as $key => $label)
-                        <label class="block text-sm">
-                            <input  type="checkbox" name="fields[]"  value="{{ $key }}" {{ in_array($key, request('fields', array_keys($columns))) ? 'checked' : '' }} class="text-yellow-500 mr-2 focus:ring-yellow-500 focus:border-yellow-500">
-                            {{ $label }}
-                        </label>
-                    @endforeach
+                        
+    @if ($key === 'location')
+        <label class="block text-sm">
+            <input type="checkbox" name="fields[]" class='text-yellow-500 focus:ring-yellow-500' value="location" {{ in_array('location', request('fields', array_keys($columns))) ? 'checked' : '' }}>
+            Location
+        </label>
+        <div class="ml-4 space-y-1">
+            @foreach (['region', 'area', 'branch', 'department'] as $part)
+                <label class="block text-xs text-gray-600">
+                    <input type="checkbox" class='text-yellow-500 focus:ring-yellow-500  rounded-full' name="location_parts[]" value="{{ $part }}" {{ in_array($part, request('location_parts', ['region','area','branch','department'])) ? 'checked' : '' }}>
+                    {{ ucfirst($part) }}
+                </label>
+            @endforeach
+        </div>
+    @else
+        <label class="block text-sm">
+            <input type="checkbox" class='text-yellow-500 focus:ring-yellow-500' name="fields[]" value="{{ $key }}" {{ in_array($key, request('fields', array_keys($columns))) ? 'checked' : '' }}>
+            {{ $label }}
+        </label>
+    @endif
+@endforeach
                 </div>
 
                 <!-- Conditions -->
 <div class='relative'>
-    <h3 class="font-semibold text-gray-700 mb-2 ">Conditions</h3>
+    <h3 class="font-semibold text-gray-700 mb-2 ">Searching Conditions</h3>
     <div id="conditions-container" >
         @php
     $savedColumns   = request()->input('condition_column', []);
     $savedOperators = request()->input('condition_operator', []);
     $savedValues    = request()->input('condition_value', []);
     $savedLogics    = request()->input('condition_logic', []);
-    $count = max(count($savedColumns), 1);
+    $count = count($savedColumns);
 @endphp
 
 @for ($i = 0; $i < $count; $i++)
     <div class="condition-group mb-4 flex flex-col space-y-2 md:space-y-0 md:flex-row md:space-x-2 items-start md:items-end">
         <select name="condition_column[]" class="w-full md:w-1/3 border rounded condition-column focus:ring-yellow-500 focus:border-yellow-500">
             @foreach ($columns as $key => $label)
-                <option value="{{ $key }}" {{ ($savedColumns[$i] ?? '') === $key ? 'selected' : '' }}>{{ $label }}</option>
+            <option value="{{ $key }}" {{ ($savedColumns[$i] ?? '') === $key ? 'selected' : '' }}>{{ $label }}</option>
             @endforeach
+            @foreach (['region', 'area', 'branch', 'department'] as $locPart)
+                <option value="{{ $locPart }}" {{ ($savedColumns[$i] ?? '') === $locPart ? 'selected' : '' }}>{{ ucfirst($locPart) }}</option>
+            @endforeach
+
         </select>
 
         <select name="condition_operator[]" class="w-full md:w-1/4 border rounded condition-operator focus:ring-yellow-500 focus:border-yellow-500">
@@ -202,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <div class='relative'>
     <h3 class="font-semibold text-gray-700 mb-2">Preferences</h3>
     <label class="block mb-2 text-sm">
-        Order By:
+        Sort on:
         <select name="order_by" class="w-full mt-1 border rounded focus:ring-yellow-500 focus:border-yellow-500">
             @foreach ($columns as $key => $label)
             <option value="{{ $key }}" {{ request('order_by', 'asset_tag') == $key ? 'selected' : '' }}>
@@ -267,7 +297,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                     <th class="px-4 py-2">{{ $label }}</th>
                                 @endif
                             @endforeach
-                            <th class="sticky right-0 bg-gray-600 px-4 py-2 text-right text-gray-100">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -275,26 +304,27 @@ document.addEventListener('DOMContentLoaded', () => {
                             <tr class="group hover:bg-gray-50 divide-x divide-gray-100">
                                 @foreach ($columns as $key => $label)
                                     @if (!request('fields') || in_array($key, request('fields')))
-                                        <td class="px-4 py-2">{{ $asset->$key ?? '' }}</td>
+                                        @if ($key === 'location')
+                                            @php
+    $parts = explode('-', $asset->location ?? '');
+    $map = ['region' => 0, 'area' => 1, 'branch' => 2, 'department' => 3];
+    $selectedParts = request('location_parts', ['region','area','branch','department']);
+    $displayParts = [];
+
+    foreach ($selectedParts as $part) {
+        $index = $map[$part];
+        $displayParts[] = $parts[$index] ?? '';
+    }
+@endphp
+<td class="px-4 py-2">{{ implode('-', $displayParts) }}</td>
+
+                                        @else
+                                            <td class="px-4 py-2">{{ $asset->$key ?? '' }}</td>
+                                        @endif
+
                                     @endif
                                 @endforeach
-                                <td class="sticky right-0 px-4 py-2 text-right bg-gray-700">
-                                    <div class="invisible group-hover:visible flex justify-start space-x-2">
-                                        <a href="{{ route('asset_history.create', $asset->asset_tag) }}" class="bg-gray-600 hover:bg-blue-400 text-blue-200 hover:text-white px-2 py-1 rounded">
-                                            <i class="fa-solid fa-hand-holding-hand"></i>
-                                        </a>
-                                        <a href="{{ route('assets.edit', $asset->id) }}" class="bg-gray-600 hover:bg-blue-600 text-blue-400 hover:text-white px-2 py-1 rounded">
-                                            <i class="fa-solid fa-pen"></i>
-                                        </a>
-                                        <form action="{{ route('assets.destroy', $asset->id) }}" method="POST" onsubmit="return confirm('Delete this asset?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="bg-gray-600 hover:bg-red-600 text-red-400 hover:text-white px-2 py-1 rounded">
-                                                <i class="fa-solid fa-trash"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
+                                
                             </tr>
                         @endforeach
                     </tbody>

@@ -8,6 +8,7 @@
     @php
         $columns = [
             'asset_tag' => 'Tag',
+            'serial' => 'Serial',
             'status' => 'Status',
             'date_of_purchase' => 'Addition Date',
             'date_of_issue' => 'Issue Date',
@@ -30,7 +31,7 @@
                 <div class="p-6 text-gray-900 flex justify-between items-center flex-wrap gap-2">
                     <div class="flex gap-2">
                         <div class=" cursor-not-allowed bg-gray-800 text-gray-200  transition ease-in px-4 py-2 rounded text-sm gap-2">                                <i class="fa-solid fa-gem pr-1"></i>Assets</div>
-                        <a href="{{ route('history.index') }}" class="bg-gray-100 transition ease-in  hover:bg-gray-200 text-gray-700 hover:text-gray-900 px-4 py-2 rounded text-sm"><i class="fa-solid fa-hand-holding-hand pr-1"></i> Shift Log</a>
+                        <a href="{{ route('history.index') }}" class="bg-gray-100 transition ease-in  hover:bg-gray-200 text-gray-700 hover:text-gray-900 px-4 py-2 rounded text-sm"><i class="fa-solid fa-hand-holding-hand pr-1"></i> Asset Movement</a>
                         <a href="{{ route('employees.index') }}" class="bg-gray-100 transition ease-in  hover:bg-gray-200 text-gray-700 hover:text-gray-900 px-4 py-2 rounded text-sm"><i class="fa-solid fa-user pr-1"></i>Employees</a>
                         <a href="{{ route('departments.index') }}" class="bg-gray-100 transition ease-in  hover:bg-gray-200 text-gray-700 hover:text-gray-900 px-4 py-2 rounded text-sm"><i class="fa-solid fa-house pr-1"></i> Departments</a>
                         <a href="{{ route('locations.index') }}" class="bg-gray-100 transition ease-in  hover:bg-gray-200 text-gray-700 hover:text-gray-900 px-4 py-2 rounded text-sm"><i class="fa-solid fa-location-dot pr-1"></i>Locations</a>
@@ -39,7 +40,7 @@
                     
                     <div class="flex gap-2">
                         <a href="{{ route('assets.query') }}" class="bg-purple-700 hover:bg-purple-600 text-white px-4 py-2 rounded text-sm shadow-lg hover:shadow-xl transition ease-in">
-                            <i class="fa-solid fa-filter"></i> Advanced Query
+                            <i class="fa-solid fa-filter"></i> Custom Report
                         </a>
                         <form method="GET" action="{{ route('admin.export') }}">
                             <input type="hidden" name="search" value="{{ request('search') }}">
@@ -52,6 +53,7 @@
                                     <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                                 @endif
                             @endforeach
+                            
                             <button type="submit" class="transition ease-in hover:bg-cyan-600  text-gray-700 hover:text-white bg-gray-100 shadow hover:shadow-xl px-4 py-2 rounded text-sm">
                                 <i class="fa-solid fa-download"></i> Export CSV
                             </button>
@@ -72,13 +74,24 @@
                                 Assets Overview
                             </div>
                             
-                            <form action="{{ route('admin.dashboard') }}" method="GET" class="flex items-center ml-4">
-                                <input type="text" name="search" value="{{ request('search') }}"
-                                       placeholder="Search..." class="border-white rounded-left px-2 py-1 text-sm shadow-lg focus:ring-purple-400 focus:border-purple-400">
-                                <button type="submit" class="text-purple-700  bg-gray-100 hover:text-white hover:bg-purple-600 px-3 py-1 rounded-right shadow-lg">
-                                    <i class="fa-solid fa-search"></i>
-                                </button>
-                            </form>
+<form action="{{ route('admin.dashboard') }}" method="GET" class="flex items-center ml-4 space-x-0">
+    <input type="text" name="search" value="{{ request('search') }}"
+        placeholder="Search..." class="border-white rounded-left px-2 py-1 text-sm shadow-lg focus:ring-purple-400 focus:border-purple-400">
+    
+    <select name="search_column" class="text-sm border-none bg-gray-100 text-gray-800 shadow-lg rounded-none px-4 py-1 h-8 w-30 rounded focus:ring-purple-400 focus:border-purple-400">
+        <option value="all" {{ request('search_column') === 'all' ? 'selected' : '' }}>All Columns</option>
+        @foreach ($columns as $key => $label)
+            <option value="{{ $key }}" {{ request('search_column') === $key ? 'selected' : '' }}>
+                {{ $label }}
+            </option>
+        @endforeach
+    </select>
+
+    <button type="submit" class="text-purple-700 bg-gray-100 hover:text-white hover:bg-purple-600 px-3 py-1 rounded-right shadow-lg">
+        <i class="fa-solid fa-search"></i>
+    </button>
+</form>
+
                         </div>
                     </div>
                     
@@ -123,7 +136,7 @@
                                 @endforeach
                                 <td class="sticky right-0 px-4 py-2 text-right bg-gray-700">
                                     <div class="invisible group-hover:visible flex justify-start space-x-2">
-                                        <a href="{{ route('asset_history.create', $asset->asset_tag) }}" class="bg-gray-600 hover:bg-blue-400 text-blue-200 hover:text-white px-2 py-1 rounded">
+                                        <a href="{{ route('asset_history.create', ['id' => $asset->id]) }}" class="bg-gray-600 hover:bg-blue-400 text-blue-200 hover:text-white px-2 py-1 rounded">
                                             <i class="fa-solid fa-hand-holding-hand"></i>
                                         </a>
 

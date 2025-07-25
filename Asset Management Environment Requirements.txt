@@ -1,0 +1,9 @@
+php artisan --version
+Laravel Framework 12.20.0
+composer -V
+Composer version 2.8.9 2025-05-13 14:01:37   
+PHP version 8.2.12 (C:\xampp\php\php.exe)  
+node -v
+v20.17.0
+npm -v
+10.8.2

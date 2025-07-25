@@ -2,7 +2,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Asset History
+            Asset Movement
         </h2>
     </x-slot>
 
@@ -31,7 +31,7 @@
                             <i class="fa-solid fa-gem pr-1"></i> Assets
                         </a>
                         <div class = "transition ease-in cursor-not-allowed bg-gray-800 text-white px-4 py-2 rounded text-sm">
-                            <i class="fa-solid fa-hand-holding-hand pr-1"></i> Shift Log
+                            <i class="fa-solid fa-hand-holding-hand pr-1"></i> Asset Movement
                         </div>
                         <a href="{{ route('employees.index') }}" class="transition ease-in bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded text-sm">
                             <i class="fa-solid fa-user pr-1"></i> Employees
@@ -49,10 +49,10 @@
 
                     <div class="flex gap-2">
                         <a href="{{ route('history.query') }}" class="bg-purple-700 hover:bg-purple-600 text-white px-4 py-2 rounded text-sm shadow-lg hover:shadow-xl transition ease-in">
-                            <i class="fa-solid fa-filter"></i> Advanced Query
+                            <i class="fa-solid fa-filter"></i> Custom Report
                         </a>
                         <form method="GET" action="{{ route('history.export') }}">
-                            <input type="hidden" name="search" value="{{ request('search') }}">
+                            <input type="hidden" name="search_column" value="{{ request('search_column', 'all') }}">
                             <button type="submit" class="transition ease-intransition ease-in  hover:bg-cyan-600 text-gray-700 hover:text-white bg-gray-100 shadow px-4 py-2 rounded text-sm hover:shadow-xl">
                                 <i class="fa-solid fa-download"></i> Export CSV
                             </button>
@@ -69,7 +69,13 @@
                         <div class="text-lg font-semibold text-gray-800">Shift Records</div>
                         <form action="{{ route('history.index') }}" method="GET" class="flex items-center ml-4">
                             <input type="text" name="search" value="{{ request('search') }}" placeholder="Search..." class="border-white rounded-left px-2 py-1 text-sm shadow-lg focus:ring-purple-600">
-                            <button type="submit" class="text-purple-700 bg-gray-100 hover:text-white hover:bg-purple-600 px-3 py-1 rounded-right shadow-lg">
+<select name="search_column" class="text-sm border-none bg-gray-100 text-gray-800 shadow-lg rounded-none px-4 py-1 h-8 w-30 rounded focus:ring-purple-600">
+    <option value="all" {{ request('search_column') === 'all' ? 'selected' : '' }}>All Columns</option>
+    @foreach ($columns as $key => $label)
+        <option value="{{ $key }}" {{ request('search_column') === $key ? 'selected' : '' }}>{{ $label }}</option>
+    @endforeach
+</select>
+<button type="submit" class="text-purple-700 bg-gray-100 hover:text-white hover:bg-purple-600 px-3 py-1 rounded-right shadow-lg">
                                 <i class="fa-solid fa-search"></i>
                             </button>
                         </form>
