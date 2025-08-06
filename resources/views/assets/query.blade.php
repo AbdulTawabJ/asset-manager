@@ -153,11 +153,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     <div class="py-12">
         <!-- Query Builder UI -->
-        <form method="GET" action="{{ route('assets.query') }}" target="_blank" class="max-w-7xl mx-auto sm:px-6 lg:px-8 mb-6">
+        <form method="GET" action="{{ route('assets.query') }}" class="max-w-7xl mx-auto sm:px-6 lg:px-8 mb-6">
             <div class="bg-white shadow rounded-lg p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Fields -->
                 <div>
-                    <h3 class="font-semibold text-gray-700 mb-2">Columns</h3>
+                    <h3 class="font-semibold text-gray-700 mb-2">Fields</h3>
                     @foreach ($columns as $key => $label)
                         
     @if ($key === 'location')
@@ -184,7 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 <!-- Conditions -->
 <div class='relative'>
-    <h3 class="font-semibold text-gray-700 mb-2 ">Searching Conditions</h3>
+    <h3 class="font-semibold text-gray-700 mb-2 ">Conditions</h3>
     <div id="conditions-container" >
         @php
     $savedColumns   = request()->input('condition_column', []);
@@ -232,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <div class='relative'>
     <h3 class="font-semibold text-gray-700 mb-2">Preferences</h3>
     <label class="block mb-2 text-sm">
-        Sort on:
+        Order By:
         <select name="order_by" class="w-full mt-1 border rounded focus:ring-yellow-500 focus:border-yellow-500">
             @foreach ($columns as $key => $label)
             <option value="{{ $key }}" {{ request('order_by', 'asset_tag') == $key ? 'selected' : '' }}>
