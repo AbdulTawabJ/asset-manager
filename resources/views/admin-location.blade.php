@@ -27,8 +27,9 @@
                     </div>
 
                     <div class="flex gap-2">
-                        <div class = "cursor-not-allowed bg-purple-400 text-gray-200 disabled px-4 py-2 rounded text-sm">
-                            <i class="fa-solid fa-filter"></i> Custom Report
+                        
+                        <div  class = "cursor-not-allowed bg-purple-400 text-gray-200 disabled px-4 py-2 rounded text-sm ">
+                            <i class="fa-regular fa-file"></i> Report
                         </div>
                         <form method="GET" action="{{ route('locations.export') }}">
     <input type="hidden" name="search" value="{{ request('search') }}">

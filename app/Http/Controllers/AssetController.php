@@ -398,6 +398,231 @@ return new StreamedResponse(function () use ($rows, $exportFields, $selectedPart
 ]);
 }
 
+public function reportForm()
+{
+    $locations = \App\Models\Location::pluck('location');
+
+    // Break locations into nested arrays
+    $parsed = [
+        'regions' => [],
+        'branches' => [],
+        'offices' => [],
+        'departments' => []
+    ];
+
+    foreach ($locations as $loc) {
+        $parts = explode('-', $loc);
+
+        if (!empty($parts[0])) $parsed['regions'][] = $parts[0];
+        if (!empty($parts[1])) $parsed['branches'][] = $parts[0] . '-' . $parts[1];
+        if (!empty($parts[2])) $parsed['offices'][] = $parts[0] . '-' . $parts[1] . '-' . $parts[2];
+        if (!empty($parts[3])) $parsed['departments'][] = $loc;
+    }
+
+    // Remove duplicates
+    $parsed = array_map('array_unique', $parsed);
+
+    return view('assets.report', [
+        'owners' => \App\Models\Employee::pluck('file_no'),
+        'types' => \App\Models\AssetType::pluck('type'),
+        'locations' => $parsed,
+    ]);
+}
+
+public function generateReport(Request $request)
+{
+    $filters = $request->only([
+    'asset_tag', 'serial',
+    'purchase_start', 'purchase_end',
+    'issue_start', 'issue_end',
+    'amount_min', 'amount_max',
+    'owner', 'location', 'type',
+    'status'  
+]);
+
+
+    $query = \App\Models\Asset::query();
+
+    if (!empty($filters['asset_tag'])) {
+        $query->where('asset_tag', 'like', '%' . $filters['asset_tag'] . '%');
+    }
+
+    if (!empty($filters['serial'])) {
+        $query->where('serial', 'like', '%' . $filters['serial'] . '%');
+    }
+
+    if (!empty($filters['purchase_start'])) {
+        $query->whereDate('date_of_purchase', '>=', $filters['purchase_start']);
+    }
+
+    if (!empty($filters['purchase_end'])) {
+        $query->whereDate('date_of_purchase', '<=', $filters['purchase_end']);
+    }
+
+    if (!empty($filters['issue_start'])) {
+        $query->whereDate('date_of_issue', '>=', $filters['issue_start']);
+    }
+
+    if (!empty($filters['issue_end'])) {
+        $query->whereDate('date_of_issue', '<=', $filters['issue_end']);
+    }
+
+    if (!empty($filters['amount_min'])) {
+        $query->where('amount', '>=', $filters['amount_min']);
+    }
+
+    if (!empty($filters['amount_max'])) {
+        $query->where('amount', '<=', $filters['amount_max']);
+    }
+    if (!empty($filters['owner'])) {
+    $query->where('owner', $filters['owner']);
+}
+
+// if (!empty($filters['location'])) {
+//     $query->where('location', 'like', '%' . $filters['location'] . '%');;
+// }
+$locationParts = [];
+if (!empty($request->region))    $locationParts[] = $request->region;
+if (!empty($request->branch))    $locationParts[] = explode('-', $request->branch)[1] ?? '';
+if (!empty($request->office))    $locationParts[] = explode('-', $request->office)[2] ?? '';
+if (!empty($request->department)) $locationParts[] = explode('-', $request->department)[3] ?? '';
+
+if (!empty($locationParts)) {
+    $locationStr = implode('-', array_filter($locationParts));
+    $query->where('location', 'like', $locationStr . '%');
+}
+
+
+
+if (!empty($filters['type'])) {
+    $query->where('type', $filters['type']);
+}
+
+if (!empty($filters['status'])) {
+    $query->where('status', $filters['status']);
+}
+
+    $assets = $query->get();
+
+    return view('assets.generated-report', [
+        'assets' => $assets,
+        'filters' => $filters,
+    ]);
+}
+
+
+
+public function exportReport(Request $request)
+{
+    $filters = $request->only([
+    'asset_tag', 'serial',
+    'purchase_start', 'purchase_end',
+    'issue_start', 'issue_end',
+    'amount_min', 'amount_max',
+    'status', 'type', 'location', 'owner'
+]);
+
+$query = \App\Models\Asset::query();
+
+if (!empty($filters['asset_tag'])) {
+    $query->where('asset_tag', 'like', '%' . $filters['asset_tag'] . '%');
+}
+
+if (!empty($filters['serial'])) {
+    $query->where('serial', 'like', '%' . $filters['serial'] . '%');
+}
+
+if (!empty($filters['purchase_start'])) {
+    $query->whereDate('date_of_purchase', '>=', $filters['purchase_start']);
+}
+
+if (!empty($filters['purchase_end'])) {
+    $query->whereDate('date_of_purchase', '<=', $filters['purchase_end']);
+}
+
+if (!empty($filters['issue_start'])) {
+    $query->whereDate('date_of_issue', '>=', $filters['issue_start']);
+}
+
+if (!empty($filters['issue_end'])) {
+    $query->whereDate('date_of_issue', '<=', $filters['issue_end']);
+}
+
+if (!empty($filters['amount_min'])) {
+    $query->where('amount', '>=', $filters['amount_min']);
+}
+
+if (!empty($filters['amount_max'])) {
+    $query->where('amount', '<=', $filters['amount_max']);
+}
+if (!empty($filters['status'])) {
+    $query->where('status', $filters['status']);
+}
+if (!empty($filters['type'])) {
+    $query->where('type', $filters['type']);
+}
+// if (!empty($filters['location'])) {
+//     $query->where('location', 'like', '%' . $filters['location'] . '%');;
+// }
+$locationParts = [];
+if (!empty($request->region))    $locationParts[] = $request->region;
+if (!empty($request->branch))    $locationParts[] = explode('-', $request->branch)[1] ?? '';
+if (!empty($request->office))    $locationParts[] = explode('-', $request->office)[2] ?? '';
+if (!empty($request->department)) $locationParts[] = explode('-', $request->department)[3] ?? '';
+
+if (!empty($locationParts)) {
+    $locationStr = implode('-', array_filter($locationParts));
+    $query->where('location', 'like', $locationStr . '%');
+}
+
+
+if (!empty($filters['owner'])) {
+    $query->where('owner', $filters['owner']);
+}
+
+
+    $assets = $query->get();
+
+    $columns = [
+        'asset_tag',
+        'serial',
+        'date_of_purchase',
+        'date_of_issue',
+        'type',
+        'description',
+        'amount',
+        'location',
+        'owner',
+        'remarks',
+        'status'
+    ];
+
+    $filename = 'asset_report_' . now()->format('Ymd_His') . '.csv';
+
+    return response()->streamDownload(function () use ($assets, $columns) {
+    $file = fopen('php://output', 'w');
+
+    // Add "Sr #" as first header
+    fputcsv($file, array_merge(['Sr #'], array_map(fn($col) => ucwords(str_replace('_', ' ', $col)), $columns)));
+
+    $count = 1;
+    foreach ($assets as $asset) {
+        $row = [$count++]; // Add serial number
+        foreach ($columns as $col) {
+            $row[] = $asset->$col ?? '';
+        }
+        fputcsv($file, $row);
+    }
+
+    fclose($file);
+}, $filename, [
+    'Content-Type' => 'text/csv',
+    'Content-Disposition' => "attachment; filename=\"$filename\"",
+]);
+
+}
+
+
 
 
 }

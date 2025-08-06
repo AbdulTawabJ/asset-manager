@@ -48,9 +48,11 @@
                     </div>
 
                     <div class="flex gap-2">
-                        <a href="{{ route('history.query') }}" class="bg-purple-700 hover:bg-purple-600 text-white px-4 py-2 rounded text-sm shadow-lg hover:shadow-xl transition ease-in">
-                            <i class="fa-solid fa-filter"></i> Custom Report
+                        <!-- rout e('history . query') -->
+                         <a href="{{ route('history.report') }}" class="transition ease-in hover:bg-purple-600 text-white bg-purple-700 shadow hover:shadow-xl px-4 py-2 rounded text-sm">
+                            <i class="fa-regular fa-file"></i> Report
                         </a>
+                        
                         <form method="GET" action="{{ route('history.export') }}">
                             <input type="hidden" name="search_column" value="{{ request('search_column', 'all') }}">
                             <button type="submit" class="transition ease-intransition ease-in  hover:bg-cyan-600 text-gray-700 hover:text-white bg-gray-100 shadow px-4 py-2 rounded text-sm hover:shadow-xl">

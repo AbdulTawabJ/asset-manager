@@ -39,8 +39,9 @@
                     </div>
                     
                     <div class="flex gap-2">
-                        <a href="{{ route('assets.query') }}" class="bg-purple-700 hover:bg-purple-600 text-white px-4 py-2 rounded text-sm shadow-lg hover:shadow-xl transition ease-in">
-                            <i class="fa-solid fa-filter"></i> Custom Report
+                        
+                        <a href="{{ route('assets.report') }}" class="transition ease-in hover:bg-purple-600 text-white bg-purple-700 shadow hover:shadow-xl px-4 py-2 rounded text-sm">
+                            <i class="fa-regular fa-file"></i> Report
                         </a>
                         <form method="GET" action="{{ route('admin.export') }}">
                             <input type="hidden" name="search" value="{{ request('search') }}">
@@ -111,6 +112,8 @@
                                 @endforeach
                             </div>
                         </div>
+                        
+
                         <a href="{{ route('assets.create') }}" class="transition ease-in inline-block bg-green-700 hover:bg-green-600 text-white text-sm px-4 py-2 rounded shadow hover:shadow-lg">
                             <i class="fa-solid fa-plus"></i> Asset
                         </a>

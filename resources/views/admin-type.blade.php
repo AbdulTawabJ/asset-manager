@@ -27,9 +27,10 @@
                     </div>
 
                     <div class="flex gap-2">
-                        <div class = "cursor-not-allowed bg-purple-400 text-gray-200 disabled px-4 py-2 rounded text-sm">
-                            <i class="fa-solid fa-filter"></i> Custom Report
-    </div>
+                        
+                        <div  class = "cursor-not-allowed bg-purple-400 text-gray-200 disabled px-4 py-2 rounded text-sm ">
+                            <i class="fa-regular fa-file"></i> Report
+                        </div>
                         <form method="GET" action="{{ route('types.export') }}">
                             <input type="hidden" name="search" value="{{ request('search') }}">
                             <button type="submit" class="transition ease-in hover:bg-cyan-600 text-gray-700 hover:text-white bg-gray-100 shadow px-4 py-2 rounded text-sm hover:shadow-xl">

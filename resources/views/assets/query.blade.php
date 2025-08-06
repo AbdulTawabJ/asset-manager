@@ -157,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="bg-white shadow rounded-lg p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Fields -->
                 <div>
-                    <h3 class="font-semibold text-gray-700 mb-2">Fields</h3>
+                    <h3 class="font-semibold text-gray-700 mb-2">Check the fields you want to fetch:</h3>
                     @foreach ($columns as $key => $label)
                         
     @if ($key === 'location')
@@ -184,7 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 <!-- Conditions -->
 <div class='relative'>
-    <h3 class="font-semibold text-gray-700 mb-2 ">Conditions</h3>
+    <h3 class="font-semibold text-gray-700 mb-2 ">Filters:</h3>
     <div id="conditions-container" >
         @php
     $savedColumns   = request()->input('condition_column', []);
@@ -223,16 +223,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     </div>
     <button type="button" id="add-condition" class="mt-2 bg-green-700 hover:bg-green-600 text-white px-3 py-1 rounded text-sm shadow hover:shadow-lg">
-        <i class="fa-solid fa-plus"></i> Add Condition
+        <i class="fa-solid fa-plus"></i> Add Filter
     </button>
     
 </div>
 
 <!-- Preferences -->
 <div class='relative'>
-    <h3 class="font-semibold text-gray-700 mb-2">Preferences</h3>
+    <h3 class="font-semibold text-gray-700 mb-2">Sort on:</h3>
     <label class="block mb-2 text-sm">
-        Order By:
         <select name="order_by" class="w-full mt-1 border rounded focus:ring-yellow-500 focus:border-yellow-500">
             @foreach ($columns as $key => $label)
             <option value="{{ $key }}" {{ request('order_by', 'asset_tag') == $key ? 'selected' : '' }}>

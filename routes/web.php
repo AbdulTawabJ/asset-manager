@@ -88,8 +88,8 @@ Route::get('/admin', [AssetController::class, 'index'])
 
 
 Route::middleware(['auth', 'role:admin'])->get('/admin/query', [AssetController::class, 'advancedQuery'])->name('assets.query');
-Route::middleware(['auth', 'role:admin'])->get('/history/query', [AssetHistoryController::class, 'advancedQuery'])->name('history.query');
-Route::middleware(['auth', 'role:admin'])->get('/history/query/export', [AssetHistoryController::class, 'exportQuery'])->name('history.query.export');
+// Route::middleware(['auth', 'role:admin'])->get('/history/query', [AssetHistoryController::class, 'advancedQuery'])->name('history.query');
+// Route::middleware(['auth', 'role:admin'])->get('/history/query/export', [AssetHistoryController::class, 'exportQuery'])->name('history.query.export');
 
 
 Route::middleware(['auth'])->group(function () {
@@ -111,6 +111,7 @@ Route::get('/assets/query/export', [AssetController::class, 'exportQuery'])->nam
 Route::get('/admin/export', [AssetController::class, 'export'])->name('admin.export');
 
 
+
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/locations', [LocationController::class, 'index'])->name('locations.index');
     Route::get('/create-location', [LocationController::class, 'create'])->name('locations.create');
@@ -119,8 +120,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::put('/edit-location/{location}', [LocationController::class, 'update'])->name('locations.update');
     Route::delete('/delete-location/{location}', [LocationController::class, 'destroy'])->name('locations.destroy');
     Route::get('/locations/export', [LocationController::class, 'export'])->name('locations.export');
-
-
+    
+    
+    
+    
     Route::get('/departments', [DepartmentController::class, 'index'])->name('departments.index');
     Route::get('/create-department', [DepartmentController::class, 'create'])->name('departments.create');
     Route::post('/create-department', [DepartmentController::class, 'store'])->name('departments.store');
@@ -128,7 +131,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::put('/edit-department/{department}', [DepartmentController::class, 'update'])->name('departments.update');
     Route::delete('/delete-department/{department}', [DepartmentController::class, 'destroy'])->name('departments.destroy');
     Route::get('/departments/export', [DepartmentController::class, 'export'])->name('departments.export');
-
+    
     Route::get('/types', [AssetTypeController::class, 'index'])->name('types.index');
     Route::get('/create-type', [AssetTypeController::class, 'create'])->name('types.create');
     Route::post('/create-type', [AssetTypeController::class, 'store'])->name('types.store');
@@ -136,7 +139,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::put('/edit-type/{type}', [AssetTypeController::class, 'update'])->name('types.update');
     Route::delete('/delete-type/{type}', [AssetTypeController::class, 'destroy'])->name('types.destroy');
     Route::get('/types/export', [AssetTypeController::class, 'export'])->name('types.export');
-
+    
     Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
     Route::get('/create-employee', [EmployeeController::class, 'create'])->name('employees.create');
     Route::post('/create-employee', [EmployeeController::class, 'store'])->name('employees.store');
@@ -144,7 +147,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::put('/edit-employee/{employee}', [EmployeeController::class, 'update'])->name('employees.update');
     Route::delete('/delete-employee/{employee}', [EmployeeController::class, 'destroy'])->name('employees.destroy');
     Route::get('/employees/export', [EmployeeController::class, 'export'])->name('employees.export');
-
+    
     Route::get('/history', [AssetHistoryController::class, 'index'])->name('history.index');
     Route::get('/create-history', [AssetHistoryController::class, 'create'])->name('history.create');
     Route::post('/create-history', [AssetHistoryController::class, 'store'])->name('history.store');
@@ -152,8 +155,16 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::put('/edit-history/{history}', [AssetHistoryController::class, 'update'])->name('history.update');
     Route::delete('/delete-history/{history}', [AssetHistoryController::class, 'destroy'])->name('history.destroy');
     Route::get('/history/export', [AssetHistoryController::class, 'export'])->name('history.export');
-
+    
+    Route::get('/report', [AssetController::class, 'reportForm'])->name('assets.report');
+    Route::get('/report/generate', [AssetController::class, 'generateReport'])->name('assets.report.generate');
+    Route::get('/report/export', [AssetController::class, 'exportReport'])->name('assets.report.export');
+    
+    Route::get('/report-history', [AssetHistoryController::class, 'reportForm'])->name('history.report');
+    Route::get('/report-history/generate', [AssetHistoryController::class, 'generateReport'])->name('history.report.generate');
+    Route::get('/report-history/export', [AssetHistoryController::class, 'exportReport'])->name('history.report.export');
 });
+
 
 Route::get('/shift-asset/{id}', [AssetHistoryController::class, 'create'])->name('asset_history.create');
 Route::post('/shift-asset', [AssetHistoryController::class, 'store'])->name('asset_history.store');

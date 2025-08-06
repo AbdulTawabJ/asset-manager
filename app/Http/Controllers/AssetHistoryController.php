@@ -141,8 +141,8 @@ if ($search) {
     public function export(Request $request)
     {
         $search = $request->input('search');
-$searchColumn = $request->input('search_column', 'all');
-
+        $searchColumn = $request->input('search_column', 'all');
+        $query = AssetHistory::query();
 if ($search) {
     if ($searchColumn === 'all') {
         $query->where(function ($q) use ($search) {
@@ -400,6 +400,207 @@ public function advancedQuery(Request $request)
     $history = $query->paginate(20)->appends($request->except('page'));
 
     return view('history.query', compact('history', 'columns', 'columnTypes', 'operators'));
+}
+
+// AssetHistoryController.php
+
+public function reportForm()
+{
+    $locations = \App\Models\Location::pluck('location');
+
+    $parsed = [
+        'regions' => [],
+        'branches' => [],
+        'offices' => [],
+        'departments' => []
+    ];
+
+    foreach ($locations as $loc) {
+        $parts = explode('-', $loc);
+
+        if (!empty($parts[0])) $parsed['regions'][] = $parts[0];
+        if (!empty($parts[1])) $parsed['branches'][] = $parts[0] . '-' . $parts[1];
+        if (!empty($parts[2])) $parsed['offices'][] = $parts[0] . '-' . $parts[1] . '-' . $parts[2];
+        if (!empty($parts[3])) $parsed['departments'][] = $loc;
+    }
+
+    $parsed = array_map('array_unique', $parsed);
+
+    return view('history.report', [
+        'owners' => \App\Models\Employee::pluck('file_no'),
+        'locations' => $parsed,
+    ]);
+}
+
+
+
+public function generateReport(Request $request)
+{
+    $filters = $request->only([
+        'asset_tag',
+        'prev_location', 'new_location',
+        'prev_owner', 'new_owner',
+        'date_start', 'date_end',
+        'status',
+    ]);
+
+    $query = \App\Models\AssetHistory::query();
+
+    if (!empty($filters['asset_tag'])) {
+        $query->where('asset_tag', 'like', '%' . $filters['asset_tag'] . '%');
+    }
+
+    // Previous Location
+$prevParts = [];
+if (!empty($request->prev_region))    $prevParts[] = $request->prev_region;
+if (!empty($request->prev_branch))    $prevParts[] = explode('-', $request->prev_branch)[1] ?? '';
+if (!empty($request->prev_office))    $prevParts[] = explode('-', $request->prev_office)[2] ?? '';
+if (!empty($request->prev_location))  $prevParts[] = explode('-', $request->prev_location)[3] ?? '';
+
+if (!empty($prevParts)) {
+    $prevLoc = implode('-', array_filter($prevParts));
+    $query->where('prev_location', 'like', $prevLoc . '%');
+}
+
+// New Location
+$newParts = [];
+if (!empty($request->new_region))    $newParts[] = $request->new_region;
+if (!empty($request->new_branch))    $newParts[] = explode('-', $request->new_branch)[1] ?? '';
+if (!empty($request->new_office))    $newParts[] = explode('-', $request->new_office)[2] ?? '';
+if (!empty($request->new_location))  $newParts[] = explode('-', $request->new_location)[3] ?? '';
+
+if (!empty($newParts)) {
+    $newLoc = implode('-', array_filter($newParts));
+    $query->where('new_location', 'like', $newLoc . '%');
+}
+
+
+    if (!empty($filters['prev_owner'])) {
+        $query->where('prev_owner', $filters['prev_owner']);
+    }
+
+    if (!empty($filters['new_owner'])) {
+        $query->where('new_owner', $filters['new_owner']);
+    }
+
+    if (!empty($filters['status'])) {
+        $query->where('status', $filters['status']);
+    }
+
+    if (!empty($filters['date_start'])) {
+        $query->whereDate('date', '>=', $filters['date_start']);
+    }
+
+    if (!empty($filters['date_end'])) {
+        $query->whereDate('date', '<=', $filters['date_end']);
+    }
+
+    $records = $query->get();
+
+    return view('history.generated-report', [
+        'records' => $records,
+        'filters' => $filters,
+    ]);
+}
+
+
+public function exportReport(Request $request)
+{
+    $filters = $request->only([
+        'asset_tag',
+        'prev_location', 'new_location',
+        'prev_owner', 'new_owner',
+        'date_start', 'date_end',
+        'status',
+    ]);
+
+    $query = \App\Models\AssetHistory::query();
+
+    if (!empty($filters['asset_tag'])) {
+        $query->where('asset_tag', 'like', '%' . $filters['asset_tag'] . '%');
+    }
+
+    // Previous Location
+$prevParts = [];
+if (!empty($request->prev_region))    $prevParts[] = $request->prev_region;
+if (!empty($request->prev_branch))    $prevParts[] = explode('-', $request->prev_branch)[1] ?? '';
+if (!empty($request->prev_office))    $prevParts[] = explode('-', $request->prev_office)[2] ?? '';
+if (!empty($request->prev_location))  $prevParts[] = explode('-', $request->prev_location)[3] ?? '';
+
+if (!empty($prevParts)) {
+    $prevLoc = implode('-', array_filter($prevParts));
+    $query->where('prev_location', 'like', $prevLoc . '%');
+}
+
+// New Location
+$newParts = [];
+if (!empty($request->new_region))    $newParts[] = $request->new_region;
+if (!empty($request->new_branch))    $newParts[] = explode('-', $request->new_branch)[1] ?? '';
+if (!empty($request->new_office))    $newParts[] = explode('-', $request->new_office)[2] ?? '';
+if (!empty($request->new_location))  $newParts[] = explode('-', $request->new_location)[3] ?? '';
+
+if (!empty($newParts)) {
+    $newLoc = implode('-', array_filter($newParts));
+    $query->where('new_location', 'like', $newLoc . '%');
+}
+
+
+    if (!empty($filters['prev_owner'])) {
+        $query->where('prev_owner', $filters['prev_owner']);
+    }
+
+    if (!empty($filters['new_owner'])) {
+        $query->where('new_owner', $filters['new_owner']);
+    }
+
+    if (!empty($filters['status'])) {
+        $query->where('status', $filters['status']);
+    }
+
+    if (!empty($filters['date_start'])) {
+        $query->whereDate('date', '>=', $filters['date_start']);
+    }
+
+    if (!empty($filters['date_end'])) {
+        $query->whereDate('date', '<=', $filters['date_end']);
+    }
+
+    $records = $query->get();
+
+    $columns = [
+        'asset_tag',
+        'description',
+        'prev_location',
+        'new_location',
+        'prev_owner',
+        'new_owner',
+        'date',
+        'status',
+    ];
+
+    $filename = 'asset_history_report_' . now()->format('Ymd_His') . '.csv';
+
+    return response()->streamDownload(function () use ($records, $columns) {
+    $file = fopen('php://output', 'w');
+
+    // Add custom "Sr #" column header manually
+    fputcsv($file, array_merge(['Sr #'], array_map(fn($col) => ucwords(str_replace('_', ' ', $col)), $columns)));
+
+    $count = 1;
+    foreach ($records as $row) {
+        $data = [$count++]; // Start with Sr #
+        foreach ($columns as $col) {
+            $data[] = $row->$col ?? '';
+        }
+        fputcsv($file, $data);
+    }
+
+    fclose($file);
+}, $filename, [
+    'Content-Type' => 'text/csv',
+    'Content-Disposition' => "attachment; filename=\"$filename\"",
+]);
+
 }
 
 
