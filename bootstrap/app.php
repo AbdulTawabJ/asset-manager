@@ -11,6 +11,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+    // Trust reverse-proxy headers (e.g. Render/Heroku terminate TLS and forward
+    // X-Forwarded-Proto). Without this, HTTPS requests look like HTTP and Laravel
+    // generates http:// asset URLs, which browsers block as mixed content.
+    $middleware->trustProxies(at: '*');
+
     $middleware->alias([
         'role' => \App\Http\Middleware\RoleMiddleware::class, // <-- custom
     ]);
