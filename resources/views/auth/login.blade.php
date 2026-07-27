@@ -2,6 +2,13 @@
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
+    <!-- Demo credentials hint (public demo) -->
+    <div class="mb-4 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+        <p class="font-semibold">🔎 Demo credentials</p>
+        <p class="mt-1"><span class="font-medium">Admin</span> — <code>admin@tmf.demo</code> / <code>password</code></p>
+        <p><span class="font-medium">IT Officer</span> — <code>it@tmf.demo</code> / <code>password</code></p>
+    </div>
+
     <form method="POST" action="{{ route('login') }}">
         @csrf
 
