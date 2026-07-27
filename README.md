@@ -179,7 +179,7 @@ Detailed software documentation — scope, requirements, ERD, data dictionary, a
 Built during an internship at Thardeep Microfinance Foundation.
 
 - GitHub: [@AbdulTawabJ](https://github.com/AbdulTawabJ)
-<!-- - LinkedIn: TODO add your profile link -->
+- LinkedIn: [Abdul Tawab Junejo](https://www.linkedin.com/in/abdul-tawab-junejo/)
 
 ---
 
