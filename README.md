@@ -27,7 +27,7 @@
 
 ## 📌 Overview
 
-**TMF Asset Manager** is a web application I built during my internship at **Thardeep Microfinance Foundation (TMF)**, from requirements gathered across three departments, to replace spreadsheet-based tracking of the organisation's IT assets across multiple regions, branches and departments.
+**TMF Asset Manager** is a **prototype** IT-asset management web application I built during my internship at **Thardeep Microfinance Foundation (TMF)**, from requirements gathered across three departments, to move asset tracking off spreadsheets into a structured system spanning multiple regions, branches and departments.
 
 It answers the questions an asset registry has to answer every day:
 
@@ -65,7 +65,7 @@ Everything below is implemented and working in the app:
 
 - **Backend:** PHP 8.2, Laravel 12 (Eloquent ORM, Blade, route middleware, SQL views)
 - **Frontend:** Blade templates, Tailwind CSS, Vite, vanilla JS (cascading dropdowns)
-- **Database:** MySQL / MariaDB in production; **SQLite** for the zero-setup demo
+- **Database:** MySQL / MariaDB (original build); **SQLite** for the zero-setup demo
 - **Auth:** Laravel Breeze (session auth) with a custom `role` guard
 - **Tooling:** Composer, npm, Docker
 
@@ -73,7 +73,9 @@ Everything below is implemented and working in the app:
 
 ## 🌐 Live Demo
 
-> 🔗 **Live URL:** _coming soon_ &nbsp;<!-- TODO: paste Render URL here after deploy -->
+> 🔗 **Live:** **https://tmf-asset-manager.onrender.com**
+>
+> ⏳ Hosted on Render's free tier — the instance sleeps after inactivity, so the **first load can take ~50 seconds** to wake up. Reloads after that are fast.
 
 **Demo credentials**
 
@@ -141,7 +143,7 @@ docker run --rm -p 8000:8000 tmf-asset-manager
 
 Then open **http://localhost:8000**.
 
-### Option C — MySQL / MariaDB (original production setup)
+### Option C — MySQL / MariaDB (original setup)
 
 1. Create a database named `asset_management_db`.
 2. In `.env`, switch `DB_CONNECTION=mysql` and fill in the MySQL block (see `.env.example`).

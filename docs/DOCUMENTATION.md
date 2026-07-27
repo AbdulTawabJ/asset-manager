@@ -4,6 +4,8 @@
 **Organisation context:** Thardeep Microfinance Foundation (internship project)
 **Author:** Abdul Tawab
 **Stack:** Laravel 12 · PHP 8.2 · Tailwind CSS · MySQL / SQLite
+**Status:** Internship prototype (functional demo)
+**Live demo:** https://tmf-asset-manager.onrender.com
 **Document type:** Combined SRS (Software Requirements Specification) + SDS (Software Design Specification)
 
 > All sample data referenced in this document is fictional. No real organisational data is disclosed.
@@ -184,7 +186,7 @@ Both roles authenticate via session-based login. `/dashboard` inspects the authe
 |---|----------|-------------|
 | NFR-1 | **Security** | All state-changing routes require authentication; role middleware enforces least privilege; CSRF protection on all forms; passwords hashed with bcrypt. |
 | NFR-2 | **Usability** | Consistent Tailwind UI, keyboard-accessible forms, dependent dropdowns to prevent invalid location selections. |
-| NFR-3 | **Portability** | Runs on MySQL/MariaDB in production and SQLite for zero-setup demos; database-specific SQL is abstracted per driver. |
+| NFR-3 | **Portability** | Runs on MySQL/MariaDB (original build) or SQLite (zero-setup demo); database-specific SQL is abstracted per driver. |
 | NFR-4 | **Performance** | Listings paginated (10–20 rows); search/report queries pushed to the database via views and indexed primary keys. |
 | NFR-5 | **Maintainability** | MVC separation, Eloquent models, form-request validation, and migrations as the single source of schema truth. |
 | NFR-6 | **Auditability** | Asset transfers are append-only history records; condition changes record the remarking officer. |
