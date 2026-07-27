@@ -1,0 +1,34 @@
+# Render blueprint — deploys the TMF Asset Manager as a free Docker web service.
+# The app ships its own freshly seeded SQLite database (built into the image),
+# so there is NO external database to provision. On each deploy/restart the demo
+# resets to clean seed data, which is exactly what you want for a public demo.
+#
+# To deploy:
+#   1. Push this repo to GitHub.
+#   2. On https://render.com → New → Blueprint → connect this repo.
+#   3. Render reads this file and creates the service. Wait for the build.
+#
+# Note: the free plan spins the service down after ~15 min of inactivity, so the
+# first request after idle takes ~30-60s to wake. That is normal for free tier.
+services:
+  - type: web
+    name: tmf-asset-manager
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    autoDeploy: true
+    envVars:
+      - key: APP_NAME
+        value: "TMF Asset Manager"
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        generateValue: true
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: SESSION_DRIVER
+        value: file
+      - key: DB_CONNECTION
+        value: sqlite

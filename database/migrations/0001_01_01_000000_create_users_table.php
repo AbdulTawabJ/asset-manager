@@ -8,15 +8,23 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
+     *
+     * NOTE: This project's real `users` table (built originally in phpMyAdmin)
+     * uses `full_name` + a `role` enum (admin|it) rather than Laravel's default
+     * `name` column. This migration reproduces that schema faithfully so the
+     * app can be provisioned from scratch (e.g. the zero-setup SQLite demo).
+     * `email_verified_at` / `remember_token` / timestamps are kept nullable for
+     * framework compatibility even though the original table omitted them.
      */
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
+            $table->string('full_name', 150);
+            $table->string('email', 150)->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->enum('role', ['admin', 'it']);
             $table->rememberToken();
             $table->timestamps();
         });
